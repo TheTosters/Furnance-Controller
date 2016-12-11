@@ -7,6 +7,10 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
 
+extern WorkMode workMode;
+extern uint8_t coTemp;
+extern uint8_t cwTemp;
+
 static void nextMenuItem(uint8_t id) {
   currentMenu->currentIndex++;
   if (currentMenu->currentIndex >= currentMenu->paramsCount) {
@@ -58,7 +62,7 @@ static void mainMenuWorkModeStartStop() {
   if (workMode == WorkMode_STOP) {
     workMode = WorkMode_STANDBY;
   } else {
-    workMode = WorkMode_STOP
+    workMode = WorkMode_STOP;
   }
 }
 

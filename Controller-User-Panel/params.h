@@ -62,4 +62,5 @@ class SpecialParam : public Param {
     ExecParamCallback   incCallback;
     ExecParamCallback   decCallback;
 };
+
 #endif

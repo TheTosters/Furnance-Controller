@@ -1,6 +1,7 @@
 #include "buttons.h"
 #include "params.h"
 #include "menus.h"
+#include "communication.h"
 
 #define BUTTON_LEFT_PIN   2
 #define BUTTON_RIGHT_PIN  3
@@ -18,6 +19,9 @@ Button* buttonLeft;
 Button* buttonRight;
 Button* buttonExit;
 Button* buttonEnter;
+WorkMode workMode;
+uint8_t coTemp;
+uint8_t cwTemp;
 
 void setup() {
   lcd.begin(26,2);
@@ -25,7 +29,7 @@ void setup() {
   buttonRight = new Button(BUTTON_RIGHT, BUTTON_RIGHT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonEnter = new Button(BUTTON_ENTER, BUTTON_EXIT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonExit = new Button(BUTTON_EXIT, BUTTON_ENTER_PIN, DEFAULT_LONGPRESS_LEN);
-  void defineMenus();
+  defineMenus();
   currentMenu->activate();
 }
 
@@ -34,5 +38,6 @@ void loop() {
   buttonRight->update();
   buttonEnter->update();
   buttonExit->update();
+  commLink.getGeneralUpdate();
   currentMenu->render();
 }
