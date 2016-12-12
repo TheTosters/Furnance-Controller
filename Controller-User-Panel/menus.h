@@ -23,6 +23,10 @@ class Menu {
     
     void      render();
     void      activate();
+    void      nextMenuItem();
+    void      prevMenuItem();
+    void      incParam();
+    void      decParam();
   public:
     Param**   params;
     uint8_t   paramsCount;
@@ -30,5 +34,4 @@ class Menu {
     ExecMenuCallback onActivate;
 };
 
-void defineMenus();
 #endif

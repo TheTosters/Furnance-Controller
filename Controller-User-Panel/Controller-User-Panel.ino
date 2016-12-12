@@ -1,6 +1,7 @@
 #include "buttons.h"
 #include "params.h"
 #include "menus.h"
+#include "menu_handling.h"
 #include "communication.h"
 
 #define BUTTON_LEFT_PIN   2
@@ -15,25 +16,21 @@
 #define BUTTON_ENTER  3
 #define BUTTON_EXIT   4
 
-Button* buttonLeft;
-Button* buttonRight;
-Button* buttonExit;
-Button* buttonEnter;
-WorkMode workMode;
-uint8_t coTemp;
-uint8_t cwTemp;
-
 void setup() {
   lcd.begin(26,2);
   buttonLeft = new Button(BUTTON_LEFT, BUTTON_LEFT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonRight = new Button(BUTTON_RIGHT, BUTTON_RIGHT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonEnter = new Button(BUTTON_ENTER, BUTTON_EXIT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonExit = new Button(BUTTON_EXIT, BUTTON_ENTER_PIN, DEFAULT_LONGPRESS_LEN);
-  defineMenus();
-  currentMenu->activate();
 }
 
 void loop() {
+  if (currentMenu == NULL) {
+    //this will communicate with other MCU and build valid menus for them
+    defineMenus();
+    currentMenu->activate();    
+  }
+  
   buttonLeft->update();
   buttonRight->update();
   buttonEnter->update();

@@ -52,8 +52,8 @@ Param::Param(char* n)
   
 }
 
-ValuedParam::ValuedParam(char* name, uint8_t min, uint8_t max) 
-: Param(name), minValue(min), maxValue(max) {
+ValuedParam::ValuedParam(char* name, uint8_t index, uint8_t min, uint8_t max) 
+: Param(name), remoteIndex(index), minValue(min), maxValue(max) {
   
 }
 

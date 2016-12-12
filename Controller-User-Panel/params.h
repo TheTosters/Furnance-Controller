@@ -14,7 +14,7 @@ class Param {
 
 class ValuedParam : public Param {
   public:
-    ValuedParam(char* name, uint8_t min, uint8_t max);
+    ValuedParam(char* name, uint8_t remoteIndex, uint8_t min, uint8_t max);
     
     void    inc();
     void    dec();
@@ -22,9 +22,11 @@ class ValuedParam : public Param {
 
     inline void setValue(uint8_t val) { value = val; prevValue = val;}
     inline uint8_t getValue() {return value;}
+    inline uint8_t getRemoteIndex() {return remoteIndex;}
   private:
     uint8_t minValue, maxValue;
     uint8_t value;
+    uint8_t remoteIndex;
     uint8_t prevValue;
 };
 

@@ -7,34 +7,6 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
 
-extern WorkMode workMode;
-extern uint8_t coTemp;
-extern uint8_t cwTemp;
-
-static void nextMenuItem(uint8_t id) {
-  currentMenu->currentIndex++;
-  if (currentMenu->currentIndex >= currentMenu->paramsCount) {
-    currentMenu->currentIndex = 0;
-  }
-  currentParam = currentMenu->params[currentMenu->currentIndex];
-}
-
-static void prevMenuItem(uint8_t id) {
-  currentMenu->currentIndex--;
-  if (currentMenu->currentIndex < 0 ) {
-    currentMenu->currentIndex = currentMenu->paramsCount - 1;
-  }
-  currentParam = currentMenu->params[currentMenu->currentIndex];
-}
-
-static void incParam(uint8_t id) {
-  currentParam->inc();
-}
-
-static void decParam(uint8_t id) {
-  currentParam->dec();
-}
-
 Menu::Menu(Param** menuItems, uint8_t count, ExecMenuCallback onAct) 
 : params(menuItems), paramsCount(count), currentIndex(0), onActivate(onAct) {
   
@@ -58,25 +30,26 @@ void Menu::activate() {
   }
 }
 
-static void mainMenuWorkModeStartStop() {
-  if (workMode == WorkMode_STOP) {
-    workMode = WorkMode_STANDBY;
-  } else {
-    workMode = WorkMode_STOP;
+void Menu::nextMenuItem() {
+  currentMenu->currentIndex++;
+  if (currentMenu->currentIndex >= currentMenu->paramsCount) {
+    currentMenu->currentIndex = 0;
   }
+  currentParam = currentMenu->params[currentMenu->currentIndex];
 }
 
-static Menu* mainMenu;
-static Param* mainMenuParams[] = {
-  new SpecialParam(&coTemp, &cwTemp, &workMode, mainMenuWorkModeStartStop, NULL)
-};
-
-void onMainMenuActivate() {
-  
+void Menu::prevMenuItem() {
+  currentMenu->currentIndex--;
+  if (currentMenu->currentIndex < 0 ) {
+    currentMenu->currentIndex = currentMenu->paramsCount - 1;
+  }
+  currentParam = currentMenu->params[currentMenu->currentIndex];
 }
 
-void defineMenus() {
-  mainMenu = new Menu(mainMenuParams, sizeof(mainMenuParams), onMainMenuActivate);
-  currentMenu = mainMenu;
+void Menu::incParam() {
+  currentParam->inc();
 }
 
+void Menu::decParam() {
+  currentParam->dec();
+}
