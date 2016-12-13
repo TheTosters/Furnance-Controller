@@ -17,9 +17,13 @@ uint8_t cwTemp;
 
 static void mainMenuWorkModeStartStop();
 static void onRemoteMenuActivate();
+static void openFeederMenu();
+static void openPumpsMenu();
 
 static Param* mainMenuParams[] = {
-  new SpecialParam(&coTemp, &cwTemp, &workMode, mainMenuWorkModeStartStop, NULL)
+  new SpecialParam(&coTemp, &cwTemp, &workMode, NULL, mainMenuWorkModeStartStop),
+  new ExecParam("Menu podajnika", openFeederMenu, NULL),
+  new ExecParam("Menu pomp", openPumpsMenu, NULL),
 };
 
 static void mainMenuWorkModeStartStop() {
@@ -40,7 +44,11 @@ static void clearButtonsCallbacks() {
 
 static void onMainMenuActivate() {
   clearButtonsCallbacks();
-  //TODO: write key binding!
+  buttonLeft->setOnShortPressCallback(prevMenuItem);
+  buttonRight->setOnShortPressCallback(nextMenuItem);
+
+  buttonExit->setOnShortPressCallback(editParamDec);
+  buttonEnter->setOnShortPressCallback(editParamInc);
 }
 
 static void prevMenuItem() {
@@ -56,8 +64,20 @@ static void openMainMenu() {
   currentMenu->activate();
 }
 
+static void openFeederMenu() {
+  currentMenu = feederMenu;
+  currentMenu->activate();  
+}
+
+static void openPumpsMenu() {
+  currentMenu = pumpsMenu;
+  currentMenu->activate();
+}
+
 static void onSendChangedParam() {
-  //TODO: sending param to I2C device
+  uint8_t devId, index, value;
+  currentMenu->getCurrentParamInfo(&devId, &index, &value);
+  commLink.sendParamChange(devId, index, value); 
 }
 
 static void editParamDec() {
@@ -88,7 +108,7 @@ static void onRemoteMenuActivate() {
 }
 
 void defineMenus() {
-  mainMenu = new Menu(mainMenuParams, sizeof(mainMenuParams), onMainMenuActivate);
+  mainMenu = new Menu(0, mainMenuParams, sizeof(mainMenuParams), onMainMenuActivate);
   feederMenu = commLink.getFeederMenu(onRemoteMenuActivate);
   pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
   currentMenu = mainMenu;

@@ -15,14 +15,8 @@ class Communication {
     void sendWantFeederCommand(bool wantFeeder);
     void sendLoadCoalCommand(bool doLoad);
     void sendWorkMode(int8_t mode);
-
-    //feeder device commands
-    uint8_t   requestFeederParam(uint8_t index);
-    void      sendFeederParamChange(uint8_t index, uint8_t newValue);
-
-    //pumps device commands
-    uint8_t   requestPumpsParam(uint8_t index);
-    void      sendPumpsParamChange(uint8_t index, uint8_t newValue);
+    void sendParamChange(uint8_t deviceId, uint8_t index, uint8_t newValue);
+    uint8_t requestParamValue(uint8_t deviceId, uint8_t index);
 
     //used in main menu, to show CO/CW temperatures, work times, etc
     void getGeneralUpdate();

@@ -19,7 +19,7 @@ typedef void (*ExecMenuCallback)();
 
 class Menu {
   public:
-    Menu(Param** menuItems, uint8_t count, ExecMenuCallback onActivate);
+    Menu(uint8_t remoteDeviceId, Param** menuItems, uint8_t count, ExecMenuCallback onActivate);
     
     void      render();
     void      activate();
@@ -27,10 +27,12 @@ class Menu {
     void      prevMenuItem();
     void      incParam();
     void      decParam();
+    void      getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue);
   public:
     Param**   params;
     uint8_t   paramsCount;
     int8_t    currentIndex;
+    uint8_t   remoteDeviceId;
     ExecMenuCallback onActivate;
 };
 

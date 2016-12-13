@@ -36,40 +36,22 @@ void Communication::sendWorkMode(int8_t mode) {
   Wire.endTransmission();
 }
 
-uint8_t Communication::requestFeederParam(uint8_t index) {
-  Wire.beginTransmission(I2C_DEVICE_FEEDER);
+uint8_t Communication::requestParamValue(uint8_t deviceId, uint8_t index) {
+  Wire.beginTransmission(deviceId);
   Wire.write(I2C_CMD_GENERAL_GET_PARAM);
   Wire.write(index);
   Wire.endTransmission();
   
-  Wire.requestFrom(I2C_DEVICE_FEEDER, 1);
+  Wire.requestFrom(deviceId, 1);
   return Wire.read(); 
 }
 
-void Communication::sendFeederParamChange(uint8_t index, uint8_t newValue) {
-  Wire.beginTransmission(I2C_DEVICE_FEEDER);
+void Communication::sendParamChange(uint8_t deviceId, uint8_t index, uint8_t newValue) {
+  Wire.beginTransmission(deviceId);
   Wire.write(I2C_CMD_GENERAL_SET_PARAM);
   Wire.write(index);
   Wire.write(newValue);
   Wire.endTransmission();    
-}
-
-uint8_t Communication::requestPumpsParam(uint8_t index) {
-  Wire.beginTransmission(I2C_DEVICE_PUMPS);
-  Wire.write(I2C_CMD_GENERAL_GET_PARAM);
-  Wire.write(index);
-  Wire.endTransmission();    
-
-  Wire.requestFrom(I2C_DEVICE_FEEDER, 1);
-  return Wire.read(); 
-}
-
-void Communication::sendPumpsParamChange(uint8_t index, uint8_t newValue) {
-  Wire.beginTransmission(I2C_DEVICE_FEEDER);
-  Wire.write(I2C_CMD_GENERAL_SET_PARAM);
-  Wire.write(index);
-  Wire.write(newValue);
-  Wire.endTransmission();
 }
 
 void Communication::getGeneralUpdate() {
@@ -122,6 +104,6 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
       params[t] = new ValuedParam(name, t, minValue, maxValue);
     }
   }
-  return new Menu(params, count, onActivate);
+  return new Menu(deviceId, params, count, onActivate);
 }
 

@@ -7,8 +7,8 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
 
-Menu::Menu(Param** menuItems, uint8_t count, ExecMenuCallback onAct) 
-: params(menuItems), paramsCount(count), currentIndex(0), onActivate(onAct) {
+Menu::Menu(uint8_t deviceId, Param** menuItems, uint8_t count, ExecMenuCallback onAct) 
+: remoteDeviceId(deviceId), params(menuItems), paramsCount(count), currentIndex(0), onActivate(onAct) {
   
 }
     
@@ -53,3 +53,11 @@ void Menu::incParam() {
 void Menu::decParam() {
   currentParam->dec();
 }
+
+void Menu::getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue) {
+  ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
+  *deviceId = remoteDeviceId;
+  *paramIndex = tmp->getRemoteIndex();
+  *paramValue = tmp->getValue();
+}
+
