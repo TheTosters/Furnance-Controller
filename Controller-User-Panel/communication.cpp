@@ -26,7 +26,7 @@ void Communication::sendLoadCoalCommand(bool doLoad) {
 
 void Communication::sendWorkMode(int8_t mode) {
   Wire.beginTransmission(I2C_DEVICE_FEEDER);
-  Wire.write(I2C_CMD_GENERAL_WORKMODE);
+  Wire.write(I2C_CMD_GENERAL_SET_WORKMODE);
   Wire.write(mode);
   Wire.endTransmission();
   
@@ -77,6 +77,7 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
   for(int8_t t = 0; t < count; t++) {
     Wire.beginTransmission(deviceId);
     Wire.write(I2C_CMD_GENERAL_GET_PARAM_DESCRIPTION);
+    Wire.write(t);
     Wire.endTransmission();
     
     Wire.requestFrom((int)deviceId, 4);
