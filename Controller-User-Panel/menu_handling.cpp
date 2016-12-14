@@ -42,21 +42,25 @@ static void clearButtonsCallbacks() {
   }
 }
 
-static void onMainMenuActivate() {
-  clearButtonsCallbacks();
-  buttonLeft->setOnShortPressCallback(prevMenuItem);
-  buttonRight->setOnShortPressCallback(nextMenuItem);
-
-  buttonExit->setOnShortPressCallback(editParamDec);
-  buttonEnter->setOnShortPressCallback(editParamInc);
+static void refreshCurrentParamValue() {
+  uint8_t deviceId;
+  uint8_t paramIndex;
+  uint8_t paramValue;
+  currentMenu->getCurrentParamInfo(&deviceId, &paramIndex, &paramValue);
+  if (deviceId != NULL) {
+    paramValue = commLink.requestParamValue(deviceId, paramIndex);
+    currentMenu->setCurrentParamValue(paramValue);
+  }
 }
 
 static void prevMenuItem() {
   currentMenu->prevMenuItem();
+  refreshCurrentParamValue();
 }
 
 static void nextMenuItem() {
   currentMenu->nextMenuItem();
+  refreshCurrentParamValue();
 }
 
 static void openMainMenu() {
@@ -105,6 +109,15 @@ static void onRemoteMenuActivate() {
   buttonRight->setOnShortPressCallback(nextMenuItem);
   buttonExit->setOnShortPressCallback(openMainMenu);
   buttonEnter->setOnShortPressCallback(startEditParam);
+}
+
+static void onMainMenuActivate() {
+  clearButtonsCallbacks();
+  buttonLeft->setOnShortPressCallback(prevMenuItem);
+  buttonRight->setOnShortPressCallback(nextMenuItem);
+
+  buttonExit->setOnShortPressCallback(editParamDec);
+  buttonEnter->setOnShortPressCallback(editParamInc);
 }
 
 void defineMenus() {

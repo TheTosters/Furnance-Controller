@@ -32,11 +32,11 @@ extern "C" {
 
 typedef struct {
   //all timers in ms
-  int feederRunTime;
-  int feederRepeatTime;
-  int keepAliveRepeatTime;
-  int keepAliveFanTime;
-  int keepAliveFeederTime;
+  uint32_t feederRunTime;
+  uint32_t feederRepeatTime;
+  uint32_t keepAliveRepeatTime;
+  uint32_t keepAliveFanTime;
+  uint32_t keepAliveFeederTime;
   int feederTempCritical;
   int fanPower;
 } WorkConfig;

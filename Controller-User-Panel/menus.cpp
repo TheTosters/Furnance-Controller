@@ -54,10 +54,24 @@ void Menu::decParam() {
   currentParam->dec();
 }
 
+void Menu::setCurrentParamValue(uint8_t value) {
+  if (currentParam->isRemotelyRefreshable()) {
+    ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
+    tmp->setValue(value);
+  }
+}
+
 void Menu::getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue) {
-  ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
-  *deviceId = remoteDeviceId;
-  *paramIndex = tmp->getRemoteIndex();
-  *paramValue = tmp->getValue();
+  if (currentParam->isRemotelyRefreshable()) {
+    ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
+    *deviceId = remoteDeviceId;
+    *paramIndex = tmp->getRemoteIndex();
+    *paramValue = tmp->getValue();
+
+  } else {
+    *deviceId = 0;
+    *paramIndex = 0;
+    *paramValue = 0;
+  }
 }
 

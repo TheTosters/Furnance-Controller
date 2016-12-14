@@ -8,26 +8,30 @@ class Param {
     virtual void  inc() = 0;
     virtual void  dec() = 0;
     virtual void  getLCDLines(char* line1, char* line2) = 0;
+    virtual bool  isRemotelyRefreshable();
   protected:
       char*       name;
 };
 
 class ValuedParam : public Param {
   public:
-    ValuedParam(char* name, uint8_t remoteIndex, uint8_t min, uint8_t max);
+    ValuedParam(char* name, uint8_t units, uint8_t remoteIndex, uint8_t min, uint8_t max);
     
-    void    inc();
-    void    dec();
-    void    getLCDLines(char* line1, char* line2);
+    virtual void inc() override;
+    virtual void dec() override;
+    virtual void getLCDLines(char* line1, char* line2) override;
+    virtual bool  isRemotelyRefreshable() override;
 
     inline void setValue(uint8_t val) { value = val; prevValue = val;}
     inline uint8_t getValue() {return value;}
     inline uint8_t getRemoteIndex() {return remoteIndex;}
+    inline uint8_t getUnits() {return units;}
   private:
     uint8_t minValue, maxValue;
     uint8_t value;
     uint8_t remoteIndex;
     uint8_t prevValue;
+    uint8_t units;
 };
 
 typedef void (*ExecParamCallback)();
@@ -36,9 +40,9 @@ class ExecParam : public Param {
   public:
     ExecParam(char* name, ExecParamCallback actionCallback, ExecParamCallback exitCallback);
     
-    void    inc();
-    void    dec();
-    void    getLCDLines(char* line1, char* line2);
+    virtual void inc() override;
+    virtual void dec() override;
+    virtual void getLCDLines(char* line1, char* line2) override;
   private:
     ExecParamCallback actionCallback;
     ExecParamCallback exitCallback;
@@ -54,9 +58,9 @@ class SpecialParam : public Param {
   public:
     SpecialParam(uint8_t* coTemp, uint8_t* cwTemp, WorkMode* workMode, ExecParamCallback incCallback, ExecParamCallback decCallback);
     
-    void    inc();
-    void    dec();
-    void    getLCDLines(char* line1, char* line2);
+    virtual void inc() override;
+    virtual void dec() override;
+    virtual void getLCDLines(char* line1, char* line2) override;
   private:
     uint8_t*            coTemp;
     uint8_t*            cwTemp;

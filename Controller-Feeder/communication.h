@@ -23,7 +23,7 @@ typedef enum __attribute__ ((__packed__)) {
 } CommandId;
 
 typedef struct __attribute__ ((packed)) {
-  uint8_t   type;
+  uint8_t   typeAndUnit;
   uint8_t   minValue;
   uint8_t   maxValue;
   char*     name;

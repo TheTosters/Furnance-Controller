@@ -28,6 +28,7 @@ class Menu {
     void      incParam();
     void      decParam();
     void      getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue);
+    void      setCurrentParamValue(uint8_t value);
   public:
     Param**   params;
     uint8_t   paramsCount;

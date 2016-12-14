@@ -4,6 +4,13 @@
 #include "Params.h"
 #include "menus.h"
 
+#define SECONDS_TO_MS(x) ((uint32_t)x * 1000)
+#define MINUTES_TO_MS(x) ((uint32_t)x * 60000)
+#define MS_TO_SECONDS(x) (x / 1000)
+#define MS_TO_MINUTES(x) (x / 60000)
+#define PERCENT_TO_VAL(prc, maxVal) (((uint32_t)prc * maxVal) / 100)
+#define VAL_TO_PERCENT(val, maxVal) (((uint32_t)val * 100) / maxVal)
+
 Communication commLink;
 
 Communication::Communication() {
@@ -31,18 +38,18 @@ void Communication::sendWorkMode(int8_t mode) {
   Wire.endTransmission();
   
   Wire.beginTransmission(I2C_DEVICE_PUMPS);
-  Wire.write(I2C_CMD_GENERAL_WORKMODE);
+  Wire.write(I2C_CMD_GENERAL_SET_WORKMODE);
   Wire.write(mode);
   Wire.endTransmission();
 }
-
+ 
 uint8_t Communication::requestParamValue(uint8_t deviceId, uint8_t index) {
   Wire.beginTransmission(deviceId);
   Wire.write(I2C_CMD_GENERAL_GET_PARAM);
   Wire.write(index);
   Wire.endTransmission();
   
-  Wire.requestFrom(deviceId, 1);
+  Wire.requestFrom((int)deviceId, 1);
   return Wire.read(); 
 }
 
@@ -82,6 +89,9 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
     
     Wire.requestFrom((int)deviceId, 4);
     uint8_t paramType = Wire.read();
+    uint8_t paramUnit = (paramType & I2C_PARAM_UNIT_MASK) >> 4;
+    paramType &= !I2C_PARAM_UNIT_MASK;
+    
     uint8_t minValue = Wire.read();
     uint8_t maxValue = Wire.read();
     uint8_t nameSize = Wire.read();
@@ -102,7 +112,7 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
       param = NULL;
       
     } else if (paramType == I2C_PARAM_TYPE_VALUE) {
-      params[t] = new ValuedParam(name, t, minValue, maxValue);
+      params[t] = new ValuedParam(name, paramUnit, t, minValue, maxValue);
     }
   }
   return new Menu(deviceId, params, count, onActivate);

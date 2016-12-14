@@ -9,6 +9,8 @@ static long lastMillis = 0;
 static int scrollDelay = 0;
 static char* curLabel = NULL;
 
+static char* unitNames[] = {"sek", "min", "stC", "%"};
+
 void getScrollable(char* line, char* label) {
   if (label != curLabel) {
     lastMillis = millis();
@@ -52,9 +54,17 @@ Param::Param(char* n)
   
 }
 
-ValuedParam::ValuedParam(char* name, uint8_t index, uint8_t min, uint8_t max) 
-: Param(name), remoteIndex(index), minValue(min), maxValue(max) {
+bool Param::isRemotelyRefreshable() {
+  return false;
+}
+
+ValuedParam::ValuedParam(char* name, uint8_t _units, uint8_t index, uint8_t min, uint8_t max) 
+: Param(name), units(_units), remoteIndex(index), minValue(min), maxValue(max) {
   
+}
+
+bool ValuedParam::isRemotelyRefreshable() {
+  return true;
 }
 
 void ValuedParam::inc() {
@@ -74,7 +84,7 @@ void ValuedParam::dec() {
 void ValuedParam::getLCDLines(char* line1, char* line2) {
   getScrollable(line1, name);
 
-  sprintf(line2, "%d (%d)", value, prevValue);
+  sprintf(line2, "%d (%d) %s", value, prevValue, unitNames[units]);
   for(int t = strlen(line2); t < CHARS_AT_LINE; t++) {
     line2[t] = ' ';
   }

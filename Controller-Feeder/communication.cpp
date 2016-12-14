@@ -18,6 +18,13 @@
 //then in requestedParam will be value (PARAM_VALUE_OFFSET + param index)
 #define PARAM_VALUE_OFFSET 90
 
+#define SECONDS_TO_MS(x) ((uint32_t)x * 1000)
+#define MINUTES_TO_MS(x) ((uint32_t)x * 60000)
+#define MS_TO_SECONDS(x) (x / 1000)
+#define MS_TO_MINUTES(x) (x / 60000)
+#define PERCENT_TO_VAL(prc, maxVal) (((uint32_t)prc * maxVal) / 100)
+#define VAL_TO_PERCENT(val, maxVal) (((uint32_t)val * 100) / maxVal)
+
 typedef enum {
   WorkMode_STOP,
   WorkMode_RUNNING,
@@ -28,7 +35,13 @@ typedef enum {
 static uint8_t requestedParam;
 
 static ParamInfo paramsInfo[] = {
-  {.type = 0, .minValue=0, .maxValue=0, .name=""}
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas pracy podajnika"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas powtarzania podawania"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_MINUTES, .minValue=1, .maxValue=255, .name="Czas do przedmuch w podtrzymaniu"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=100, .name="Czas przedmuchu w podtrzymaniu"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas pracy podajnika w podtrzymaniu"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C,   .minValue=40, .maxValue=120, .name="Temperatura alarmu zapalenia podajnika"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_PERCENT, .minValue=0, .maxValue=100, .name="Moc wentylatora"}
 };
 
 //forward declarations
@@ -47,11 +60,11 @@ void initCommunication() {
 
 void onI2cRequest() {
   if (requestedParam == PARAM_GET_MENU_ITEMS_COUNT) {
-    Wire.write(14);
+    Wire.write(7);
     
   } else if (requestInRange(PARAM_INFO_OFFSET, PARAM_INFO_OFFSET + 29)) {
     int index = requestedParam - PARAM_INFO_OFFSET;
-    Wire.write(paramsInfo[index].type);
+    Wire.write(paramsInfo[index].typeAndUnit);
     Wire.write(paramsInfo[index].minValue);
     Wire.write(paramsInfo[index].maxValue);
     Wire.write(strlen(paramsInfo[index].name));
@@ -65,94 +78,64 @@ void onI2cRequest() {
     }
     
   } else if (requestInRange(PARAM_VALUE_OFFSET, PARAM_VALUE_OFFSET + 29)) {
-    //TODO: implement
     switch(requestedParam - PARAM_VALUE_OFFSET) {
       case 0:
-      break;
+        Wire.write( MS_TO_SECONDS(workConfig.feederRunTime) );
+        break;
+      case 1:
+        Wire.write( MS_TO_SECONDS(workConfig.feederRepeatTime) );
+        break;
+      case 2:
+        Wire.write( MS_TO_MINUTES( workConfig.keepAliveRepeatTime ) );
+        break;
+      case 3:
+        Wire.write( MS_TO_SECONDS(workConfig.keepAliveFanTime) );
+        break;
+      case 4:
+        Wire.write( MS_TO_SECONDS(workConfig.keepAliveFeederTime) );
+        break;
+      case 5:
+        Wire.write(workConfig.feederTempCritical);
+        break;
+      case 6:
+        Wire.write( VAL_TO_PERCENT(workConfig.fanPower, 128) );
+        break;
+      default:
+        Wire.write(0);
+        break;
     }
   }
 }
 
-/*
-void handleReceivedCommand(Command* command) {
-  switch(command->cmd) {
-    case cmdSetFeederRunTime:
-      workConfig.feederRunTime = command->argument;
-      break;
-      
-    case cmdGetFeederRunTime:
-      sendCmd(command->cmd, workConfig.feederRunTime);
-      break;
-        
-    case cmdSetFeederRepeatTime:
-      workConfig.feederRepeatTime = command->argument;
-      break;
-      
-    case cmdGetFeederRepeatTime:
-      sendCmd(command->cmd, workConfig.feederRepeatTime);
-      break; 
-      
-    case cmdSetKeepAliveRepeatTime:
-      workConfig.keepAliveRepeatTime = command->argument;
-      break;
-      
-    case cmdGetKeepAliveRepeatTime:
-      sendCmd(command->cmd, workConfig.keepAliveRepeatTime);
-      break; 
-      
-    case cmdSetKeepAliveFanTime:
-      workConfig.keepAliveFanTime = command->argument;
-      break;
-      
-    case cmdGetKeepAliveFanTime:
-      sendCmd(command->cmd, workConfig.keepAliveFanTime);
-      break;
-      
-    case cmdSetKeepAliveFeederTime: 
-      workConfig.keepAliveFeederTime = command->argument;
-      break;
-      
-    case cmdGetKeepAliveFeederTime:
-      sendCmd(command->cmd, workConfig.keepAliveFeederTime);
-      break;
-      
-    case cmdSetFeederTempCritical:
-      workConfig.feederTempCritical = command->argument;
-      break;
-      
-    case cmdGetFeederTempCritical:
-      sendCmd(command->cmd, workConfig.feederTempCritical);
-      break;
-      
-    case cmdSetFanPower:
-      workConfig.fanPower = command->argument;
-      workConfig.fanPower = workConfig.fanPower > 128 ? 128 : workConfig.fanPower;
-      workConfig.fanPower = workConfig.fanPower < 0 ? 0 : workConfig.fanPower;
-      break;
-      
-    case cmdGetFanPower:
-      sendCmd(command->cmd, workConfig.fanPower);
-      break;
-      
-    case cmdSetStartedMode:
-      startedMode = cmd->argument;
-      break;
-      
-    case cmdSetWorkModeRequested:
-      workModeRequested = cmd->argument;
-      break;
-      
-    case cmdSetFeederRequested:
-    case cmdGetLastFeederTemp:
-    case cmdSaveConfig:
-    case cmdResetToDefaultConfig:
-    case cmdLoadConfig:
-      break;
-  }
-}
-  */
 void changeParamValue(uint8_t paramIndex, uint8_t value) {
-  //todo: implement
+  switch(paramIndex) {
+    case 0:
+        workConfig.feederRunTime = SECONDS_TO_MS(value);
+        break;
+      case 1:
+        workConfig.feederRepeatTime = SECONDS_TO_MS(value);
+        break;
+      case 2:
+        workConfig.keepAliveRepeatTime = MINUTES_TO_MS(value);
+        break;
+      case 3:
+        workConfig.keepAliveFanTime = SECONDS_TO_MS(value);
+        break;
+      case 4:
+        workConfig.keepAliveFeederTime = SECONDS_TO_MS(value);
+        break;
+      case 5:
+        workConfig.feederTempCritical = value;
+        break;
+      case 6:
+        workConfig.fanPower = PERCENT_TO_VAL(value,128);
+        workConfig.fanPower = workConfig.fanPower > 128 ? 128 : workConfig.fanPower;
+        workConfig.fanPower = workConfig.fanPower < 0 ? 0 : workConfig.fanPower;
+        break;
+
+      default:
+        break;
+    }
 }
 
 void onI2cReceiveEvent(int bytesCount) {
