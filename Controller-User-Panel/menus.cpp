@@ -6,6 +6,7 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
 
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
+static char oldLine1[17], oldLine2[17];
 
 Menu::Menu(uint8_t deviceId, Param** menuItems, uint8_t count, ExecMenuCallback onAct) 
 : remoteDeviceId(deviceId), params(menuItems), paramsCount(count), currentIndex(0), onActivate(onAct) {
@@ -15,6 +16,14 @@ Menu::Menu(uint8_t deviceId, Param** menuItems, uint8_t count, ExecMenuCallback 
 void Menu::render() {
   char line1[17], line2[17];
   params[currentIndex]->getLCDLines(line1, line2);
+  
+  if ((strncmp(line1, oldLine1, 16) == 0) &&
+      (strncmp(line2, oldLine2, 16) == 0)) {
+     return;
+  }
+
+  strncpy(oldLine1, line1, 16);
+  strncpy(oldLine2, line2, 16);
   
   lcd.clear();
   lcd.setCursor(0, 0);
