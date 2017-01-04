@@ -1,9 +1,12 @@
 #include "buttons.h"
 
 Button::Button(uint8_t i, uint8_t p, uint8_t lp)
-: id(i), pin(p), longpressLen(lp), wasPressed(0), pressedCounter(0), delayTime(0), lastMillis(0) {
-  pinMode(pin, INPUT);
-  digitalWrite(pin, HIGH); // pull-up
+: id(i), pin(p), longpressLen(lp), wasPressed(0), pressedCounter(0), delayTime(0), lastMillis(0), onShortPress(NULL), onLongPress(NULL) {
+  pinMode(pin, INPUT_PULLUP);
+  Serial.print("Configure button id=");
+  Serial.print((int)i);
+  Serial.print(", pin=");
+  Serial.println((int)p);
 }
 
 ButtonPressEvent Button::getEvent() {
@@ -13,6 +16,7 @@ ButtonPressEvent Button::getEvent() {
     // handle release event
     if (pressedCounter < longpressLen) {
       event = EV_SHORTPRESS;
+
     } else {
       event = EV_LONGPRESS;
     }
@@ -24,9 +28,11 @@ ButtonPressEvent Button::getEvent() {
 }
 
 ButtonPressEvent Button::update()
-{
+{  
   if (delayTime != 0) {
     unsigned long tmp = millis() - lastMillis;
+    lastMillis = millis();
+    
     if (tmp > delayTime) { 
       delayTime = 0;
     } else {
@@ -36,10 +42,10 @@ ButtonPressEvent Button::update()
       return getEvent();
     }
   }
-  lastMillis = millis();
   delayTime = BUTTON_CHECK_DELAY;
   
-  nowPressed = digitalRead(pin) ? 0 : 1;
+  nowPressed = (digitalRead(pin) == HIGH) ? 0 : 1;
+  
   ButtonPressEvent event = getEvent();
 
   if ((event == EV_SHORTPRESS) && (onShortPress != NULL)) {
@@ -52,6 +58,9 @@ ButtonPressEvent Button::update()
   // update press running duration
   if (nowPressed) {
     ++pressedCounter;
+    if (pressedCounter > longpressLen) {
+      pressedCounter = longpressLen + 1;
+    }
   } else {
     pressedCounter = 0;
   }

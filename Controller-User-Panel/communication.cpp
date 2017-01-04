@@ -14,7 +14,7 @@
 Communication commLink;
 
 Communication::Communication() {
-  Wire.begin();
+ // Wire.begin();
 }
 
 void Communication::sendWantFeederCommand(bool wantFeeder) {

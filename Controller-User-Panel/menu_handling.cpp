@@ -121,9 +121,9 @@ static void onMainMenuActivate() {
 }
 
 void defineMenus() {
-  mainMenu = new Menu(0, mainMenuParams, sizeof(mainMenuParams), onMainMenuActivate);
-  feederMenu = commLink.getFeederMenu(onRemoteMenuActivate);
-  pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
+  mainMenu = new Menu(0, mainMenuParams, 3, onMainMenuActivate);
+//  feederMenu = commLink.getFeederMenu(onRemoteMenuActivate);
+//  pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
   currentMenu = mainMenu;
 }
 

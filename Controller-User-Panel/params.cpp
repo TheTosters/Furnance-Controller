@@ -1,11 +1,11 @@
 #include "params.h"
 
 #define CHARS_AT_LINE   16
-#define SCROLL_DELAY    150
+#define SCROLL_DELAY    250
 
 static uint8_t scrollPos = 0;
 static uint8_t labelLen = 0;
-static long lastMillis = 0;
+static unsigned long lastMillis = 0;
 static int scrollDelay = 0;
 static char* curLabel = NULL;
 
@@ -18,8 +18,14 @@ void getScrollable(char* line, char* label) {
     labelLen = strlen(label);
     curLabel = label;
     scrollDelay = 2000; //2s before start scrolling
+    for(int t = 0; t < CHARS_AT_LINE; t++) {
+      line[t] = t > labelLen ? ' ' : label[t];
+    }
   }
-  long tmp = millis() - lastMillis;
+  if (labelLen <= CHARS_AT_LINE) {
+    return;
+  }
+  unsigned long tmp = millis() - lastMillis;
   lastMillis = millis();
   tmp = tmp > scrollDelay ? scrollDelay : tmp;
   scrollDelay -= tmp;
@@ -33,12 +39,12 @@ void getScrollable(char* line, char* label) {
       
     } else if (scrollPos > labelLen) {
       scrollPos = 0;
+      scrollDelay = 2000; //2s before start scrolling
     }
-  }
-  
-  for(int t = 0; t < CHARS_AT_LINE; t++) {
-    int index = t + scrollPos;
-    line[t] = index > labelLen ? ' ' : label[index];
+    for(int t = 0; t < CHARS_AT_LINE; t++) {
+      int index = t + scrollPos;
+      line[t] = index > labelLen ? ' ' : label[index];
+    }
   }
 }
 

@@ -2,7 +2,7 @@
 #include <LiquidCrystal.h>
 #include "params.h"
 
-LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);  //PINS: D7, D6, D5, D4, D3, D2
 
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
