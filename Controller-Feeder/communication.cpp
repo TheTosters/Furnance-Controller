@@ -34,13 +34,14 @@ typedef enum {
 //if master i2c want some data, this variable is used to determine what we want!
 static uint8_t requestedParam;
 
+//WARNING: Wire libreary limit is 32b, so length of name can't exceed it!
 static ParamInfo paramsInfo[] = {
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas pracy podajnika"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas powtarzania podawania"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_MINUTES, .minValue=1, .maxValue=255, .name="Czas do przedmuch w podtrzymaniu"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_MINUTES, .minValue=1, .maxValue=255, .name="Czas do przedmuch w podtrzym."},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=100, .name="Czas przedmuchu w podtrzymaniu"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas pracy podajnika w podtrzymaniu"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C,   .minValue=40, .maxValue=120, .name="Temperatura alarmu zapalenia podajnika"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=1, .maxValue=255, .name="Czas pracy podajnika w podtrzym."},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C,   .minValue=40, .maxValue=120, .name="Temp.alarmu zapalenia podajnika"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_PERCENT, .minValue=0, .maxValue=100, .name="Moc wentylatora"}
 };
 

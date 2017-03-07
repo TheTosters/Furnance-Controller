@@ -34,13 +34,14 @@ typedef enum {
 //if master i2c want some data, this variable is used to determine what we want!
 static uint8_t requestedParam;
 
+//WARNING: Wire libreary limit is 32b, so length of name can't exceed it!
 static ParamInfo paramsInfo[] = {
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=20, .maxValue=60, .name="Min.temp. wody CW"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=20, .maxValue=60, .name="Max.temp. wody CW"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=30, .maxValue=85, .name="Min.temp. kotla CO"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=30, .maxValue=85, .name="Max.temp. kotla CO"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_MINUTES, .minValue=1, .maxValue=255, .name="Cykliczne zalaczanie pomp"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=2, .maxValue=255, .name="Czas pracy pomp w cyklicznym zalaczeniu"}  
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=2, .maxValue=255, .name="Czas pracy pomp w cykl.zal."}  
 };
 
 //forward declarations
@@ -52,7 +53,7 @@ bool requestInRange(uint8_t startRange, uint8_t endRange) {
 }
 
 void initCommunication() {
-  Wire.begin(I2C_DEVICE_FEEDER);
+  Wire.begin(I2C_DEVICE_PUMPS);
   Wire.onRequest(onI2cRequest);
   Wire.onReceive(onI2cReceiveEvent);
 }

@@ -105,6 +105,7 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
     
     Wire.beginTransmission(deviceId);
     Wire.write(I2C_CMD_GENERAL_GET_PARAM_NAME);
+    Wire.write(t);
     Wire.endTransmission();
     char* name = new char[nameSize + 1];
     Wire.requestFrom((int)deviceId, (int)nameSize);
@@ -115,7 +116,9 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
 #ifdef DEBUG_COMMUNICATION
   Serial.print("  Param ");
   Serial.print(t);
-  Serial.print(": name:");
+  Serial.print(": name[");
+  Serial.print(nameSize);
+  Serial.print("]");
   Serial.print((const char*)name);
   Serial.print(", Min:");
   Serial.print(minValue);
