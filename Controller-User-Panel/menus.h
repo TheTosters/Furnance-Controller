@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
+#define DEBUG_MENUS 1
+
 class Param;
 class Button;
 class Menu;
@@ -29,6 +31,7 @@ class Menu {
     void      decParam();
     void      getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue);
     void      setCurrentParamValue(uint8_t value);
+    void      resetCurrentParam();
   public:
     Param**   params;
     uint8_t   paramsCount;

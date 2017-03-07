@@ -1,7 +1,15 @@
 // Program odczytuje temperaturę kilku czujników
+/*
+ * How to connect:
+ * D2 -> One Wire DS1820 (define ONEWIRE_PIN at temperature.cpp)
+ * D3 -> Co PUMP (define PUMP_CO at logic.h)
+ * D4 -> CO-CW Pump (define PUMP_CW at logic.h)
+ * D5 -> Heaters Pump (define PUMP_HEATERS at logic.h)
+ */
 
 #include "temperature.h"
 #include "logic.h"
+#include "Communication.h"
 
 #define DUMP_TO_SERIAL 1
 
@@ -13,6 +21,7 @@ void setup() {
 
   beginTemperatures();
   beginLogic();
+  initCommunication();
 }
 
 void emergencyMode() {

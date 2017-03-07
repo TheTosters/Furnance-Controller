@@ -14,7 +14,7 @@ typedef enum {
   EV_LONGPRESS
 } ButtonPressEvent;
 
-typedef void (*ButtonCallback)(uint8_t id);
+typedef void (*ButtonCallback)();
 
 class Button {
   public:
@@ -31,7 +31,7 @@ class Button {
     ButtonCallback  onShortPress;
     ButtonCallback  onLongPress;
     unsigned long   lastMillis;
-    uint8_t        delayTime;
+    uint8_t         delayTime;
     uint8_t         pressedCounter;   // press running duration
     uint8_t         id;
     const uint8_t   pin;              // pin to which button is connected

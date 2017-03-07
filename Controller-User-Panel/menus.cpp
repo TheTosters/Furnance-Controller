@@ -6,7 +6,24 @@ LiquidCrystal lcd(7, 6, 5, 4, 3, 2);  //PINS: D7, D6, D5, D4, D3, D2
 
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
-static char oldLine1[17], oldLine2[17];
+//static char oldLine1[17]={0}, oldLine2[17]={0};
+static uint8_t oldLine1Hash = 0, oldLine2Hash = 0;
+
+int8_t crc8(const uint8_t *addr, uint8_t len)
+{
+    uint8_t crc = 0;
+
+    while (len--) {
+        uint8_t inbyte = *addr++;
+        for (uint8_t i = 8; i; i--) {
+            uint8_t mix = (crc ^ inbyte) & 0x01;
+            crc >>= 1;
+            if (mix) crc ^= 0x8C;
+            inbyte >>= 1;
+        }
+    }
+    return crc;
+}
 
 Menu::Menu(uint8_t deviceId, Param** menuItems, uint8_t count, ExecMenuCallback onAct) 
 : remoteDeviceId(deviceId), params(menuItems), paramsCount(count), currentIndex(0), onActivate(onAct) {
@@ -14,17 +31,20 @@ Menu::Menu(uint8_t deviceId, Param** menuItems, uint8_t count, ExecMenuCallback 
 }
     
 void Menu::render() {
-  char line1[17], line2[17];
+  char line1[17]={0}, line2[17]={0};
   params[currentIndex]->getLCDLines(line1, line2);
-  
-  if ((strncmp(line1, oldLine1, 16) == 0) &&
-      (strncmp(line2, oldLine2, 16) == 0)) {
-     return;
+  uint8_t tmpHash = crc8(line1, 16);
+  if (tmpHash == oldLine1Hash) {
+    tmpHash = crc8(line2, 16);
+    if (tmpHash == oldLine2Hash) {
+      return;
+    } else {
+      oldLine2Hash = tmpHash;
+    }
+  } else {
+    oldLine1Hash = tmpHash;
   }
-
-  strncpy(oldLine1, line1, 16);
-  strncpy(oldLine2, line2, 16);
-  
+    
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(line1);
@@ -33,10 +53,16 @@ void Menu::render() {
 }
 
 void Menu::activate() {
+  Serial.println("Menu:Activate");
   currentMenu = this;
+  resetCurrentParam();
   if (onActivate != NULL) {
     onActivate();
   }
+}
+
+void Menu::resetCurrentParam() {
+  currentParam = currentMenu->params[currentMenu->currentIndex];  
 }
 
 void Menu::nextMenuItem() {
@@ -44,7 +70,15 @@ void Menu::nextMenuItem() {
   if (currentMenu->currentIndex >= currentMenu->paramsCount) {
     currentMenu->currentIndex = 0;
   }
-  currentParam = currentMenu->params[currentMenu->currentIndex];
+  resetCurrentParam();
+#ifdef DEBUG_MENUS
+  Serial.print("NextMenuItem: newIndex=");
+  Serial.print(currentMenu->currentIndex);
+  Serial.print(", currentMenu=");
+  Serial.print((long int)currentMenu, HEX);
+  Serial.print(", param=");
+  Serial.println((long int)currentParam, HEX);
+#endif
 }
 
 void Menu::prevMenuItem() {
@@ -52,7 +86,15 @@ void Menu::prevMenuItem() {
   if (currentMenu->currentIndex < 0 ) {
     currentMenu->currentIndex = currentMenu->paramsCount - 1;
   }
-  currentParam = currentMenu->params[currentMenu->currentIndex];
+  resetCurrentParam();
+#ifdef DEBUG_MENUS
+  Serial.print("PrevMenuItem: newIndex=");
+  Serial.print(currentMenu->currentIndex);
+  Serial.print(", currentMenu=");
+  Serial.print((long int)currentMenu, HEX);
+  Serial.print(", param=");
+  Serial.println((long int)currentParam, HEX);
+#endif
 }
 
 void Menu::incParam() {

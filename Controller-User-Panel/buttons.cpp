@@ -3,10 +3,12 @@
 Button::Button(uint8_t i, uint8_t p, uint8_t lp)
 : id(i), pin(p), longpressLen(lp), wasPressed(0), pressedCounter(0), delayTime(0), lastMillis(0), onShortPress(NULL), onLongPress(NULL) {
   pinMode(pin, INPUT_PULLUP);
+#ifdef DEBUG_KEYS
   Serial.print("Configure button id=");
   Serial.print((int)i);
   Serial.print(", pin=");
   Serial.println((int)p);
+#endif
 }
 
 ButtonPressEvent Button::getEvent() {
@@ -49,10 +51,10 @@ ButtonPressEvent Button::update()
   ButtonPressEvent event = getEvent();
 
   if ((event == EV_SHORTPRESS) && (onShortPress != NULL)) {
-    onShortPress(id);
+    onShortPress();
     
   } else if ((event == EV_LONGPRESS) && (onLongPress != NULL)) {
-    onLongPress(id);
+    onLongPress();
   }
   
   // update press running duration

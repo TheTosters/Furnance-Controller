@@ -27,6 +27,9 @@ static Param* mainMenuParams[] = {
 };
 
 static void mainMenuWorkModeStartStop() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:mainMenuWorkModeStartStop"); 
+#endif
   if (workMode == WorkMode_STOP) {
     workMode = WorkMode_STANDBY;
   } else {
@@ -35,6 +38,9 @@ static void mainMenuWorkModeStartStop() {
 }
 
 static void clearButtonsCallbacks() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:clearButtonsCallbacks"); 
+#endif
   Button* buttons[] = {buttonLeft, buttonRight, buttonExit, buttonEnter};
   for(uint8_t t = 0; t < 4; t++) {
     buttons[t]->setOnLongPressCallback(NULL);
@@ -43,10 +49,21 @@ static void clearButtonsCallbacks() {
 }
 
 static void refreshCurrentParamValue() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:refreshCurrentParamValue"); 
+#endif
   uint8_t deviceId;
   uint8_t paramIndex;
   uint8_t paramValue;
   currentMenu->getCurrentParamInfo(&deviceId, &paramIndex, &paramValue);
+#ifdef DEBUG_MENUS
+  Serial.print("  deviceId=");
+  Serial.print(deviceId); 
+  Serial.print(", paramIndex="); 
+  Serial.print(paramIndex); 
+  Serial.print(", paramValue="); 
+  Serial.println(paramValue); 
+#endif
   if (deviceId != NULL) {
     paramValue = commLink.requestParamValue(deviceId, paramIndex);
     currentMenu->setCurrentParamValue(paramValue);
@@ -54,45 +71,72 @@ static void refreshCurrentParamValue() {
 }
 
 static void prevMenuItem() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:prevMenuItem"); 
+#endif
   currentMenu->prevMenuItem();
   refreshCurrentParamValue();
 }
 
 static void nextMenuItem() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:nextMenuItem"); 
+#endif
   currentMenu->nextMenuItem();
   refreshCurrentParamValue();
 }
 
 static void openMainMenu() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:openMainMenu"); 
+#endif
   currentMenu = mainMenu;
   currentMenu->activate();
 }
 
 static void openFeederMenu() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:openFeederMenu"); 
+#endif
   currentMenu = feederMenu;
   currentMenu->activate();  
 }
 
 static void openPumpsMenu() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:openPumpsMenu"); 
+#endif
   currentMenu = pumpsMenu;
   currentMenu->activate();
 }
 
 static void onSendChangedParam() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:onSendChangedParam"); 
+#endif
   uint8_t devId, index, value;
   currentMenu->getCurrentParamInfo(&devId, &index, &value);
   commLink.sendParamChange(devId, index, value); 
 }
 
 static void editParamDec() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:editParamDec"); 
+#endif
   currentMenu->decParam();
 }
 
 static void editParamInc() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:editParamInc"); 
+#endif
   currentMenu->incParam();
 }
 
 static void startEditParam() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:startEditParam"); 
+#endif
   buttonLeft->setOnShortPressCallback(editParamDec);
   buttonRight->setOnShortPressCallback(editParamInc);
   buttonExit->setOnShortPressCallback(onRemoteMenuActivate);
@@ -100,6 +144,10 @@ static void startEditParam() {
 }
 
 static void onRemoteMenuActivate() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:onRemoteMenuActivate"); 
+#endif
+
   //no long presses, bind possibility to exit menu
   // Left, Right - menu navigation
   // Ok - select param to edit
@@ -112,6 +160,9 @@ static void onRemoteMenuActivate() {
 }
 
 static void onMainMenuActivate() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:onMainMenuActivate"); 
+#endif
   clearButtonsCallbacks();
   buttonLeft->setOnShortPressCallback(prevMenuItem);
   buttonRight->setOnShortPressCallback(nextMenuItem);
@@ -121,9 +172,12 @@ static void onMainMenuActivate() {
 }
 
 void defineMenus() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:defineMenus"); 
+#endif
   mainMenu = new Menu(0, mainMenuParams, 3, onMainMenuActivate);
-//  feederMenu = commLink.getFeederMenu(onRemoteMenuActivate);
-//  pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
+  //feederMenu = commLink.getFeederMenu(onRemoteMenuActivate);
+  pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
   currentMenu = mainMenu;
 }
 

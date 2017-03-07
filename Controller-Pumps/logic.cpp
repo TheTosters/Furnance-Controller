@@ -5,6 +5,7 @@
 LogicConfig logicConfig;
 bool wantHeaters;
 bool wantFeederRun;
+bool startedMode;
 static bool CWIsHeating;
 static bool COIsHeating;
 static int32_t cyclicDelay;

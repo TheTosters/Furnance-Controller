@@ -1,3 +1,10 @@
+/**
+ * How to connect:
+ * D2 -> Opto-triac out
+ * D3 -> went control
+ * D8 -> feeder control On/Off
+ * D9 -> One Wire sensor
+ */
 
 #include "communication.h"
 #include "logic.h"

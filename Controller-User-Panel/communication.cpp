@@ -14,7 +14,7 @@
 Communication commLink;
 
 Communication::Communication() {
- // Wire.begin();
+  Wire.begin();
 }
 
 void Communication::sendWantFeederCommand(bool wantFeeder) {
@@ -74,12 +74,19 @@ Menu* Communication::getPumpsMenu(ExecMenuCallback onActivate) {
 }
 
 Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
+#ifdef DEBUG_COMMUNICATION
+  Serial.print("Trying to get menu from I2C device:");
+  Serial.println(deviceId);
+#endif
   Wire.beginTransmission(deviceId);
   Wire.write(I2C_CMD_GENERAL_GET_PARAMS_COUNT);
   Wire.endTransmission();
   Wire.requestFrom((int)deviceId, 1);
   int8_t count = Wire.read();
-
+#ifdef DEBUG_COMMUNICATION
+  Serial.print("Menu size:");
+  Serial.println(count);
+#endif
   Param** params = new Param*[count];
   for(int8_t t = 0; t < count; t++) {
     Wire.beginTransmission(deviceId);
@@ -105,6 +112,20 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
       name[y] = Wire.read();
     }
     name[nameSize] = 0;
+#ifdef DEBUG_COMMUNICATION
+  Serial.print("  Param ");
+  Serial.print(t);
+  Serial.print(": name:");
+  Serial.print((const char*)name);
+  Serial.print(", Min:");
+  Serial.print(minValue);
+  Serial.print(", Max:");
+  Serial.print(maxValue);
+  Serial.print(", Type:");
+  Serial.print(paramType);
+  Serial.print(", Unit:");
+  Serial.println(paramUnit);
+#endif
 
     Param* param;
     if (paramType == I2C_PARAM_TYPE_EXEC) {
@@ -115,6 +136,10 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
       params[t] = new ValuedParam(name, paramUnit, t, minValue, maxValue);
     }
   }
+#ifdef DEBUG_COMMUNICATION
+  Serial.println("End of reading menu.");
+#endif
+
   return new Menu(deviceId, params, count, onActivate);
 }
 

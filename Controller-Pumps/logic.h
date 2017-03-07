@@ -26,7 +26,7 @@ typedef struct {
   int8_t maxCOTemp;
 
   int32_t    heaterPumpCyclicRunDelay;
-  int16_t    heaterPumpCyclicRunDuration;
+  int32_t    heaterPumpCyclicRunDuration;
 } LogicConfig;
 
 extern LogicConfig logicConfig;
@@ -36,6 +36,9 @@ extern bool wantHeaters;
 
 //if true, then feeder & fan should be run, we want fire!
 extern bool wantFeederRun;
+
+//probably not used here
+extern bool startedMode;
 
 void beginLogic();
 void updateLogic();

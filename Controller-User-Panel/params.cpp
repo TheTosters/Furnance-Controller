@@ -18,9 +18,10 @@ void getScrollable(char* line, char* label) {
     labelLen = strlen(label);
     curLabel = label;
     scrollDelay = 2000; //2s before start scrolling
-    for(int t = 0; t < CHARS_AT_LINE; t++) {
-      line[t] = t > labelLen ? ' ' : label[t];
-    }
+  }
+  for(int8_t t = 0; t < CHARS_AT_LINE; t++) {
+    int8_t index = t + scrollPos;
+    line[t] = index > labelLen ? ' ' : label[index];
   }
   if (labelLen <= CHARS_AT_LINE) {
     return;
@@ -41,16 +42,12 @@ void getScrollable(char* line, char* label) {
       scrollPos = 0;
       scrollDelay = 2000; //2s before start scrolling
     }
-    for(int t = 0; t < CHARS_AT_LINE; t++) {
-      int index = t + scrollPos;
-      line[t] = index > labelLen ? ' ' : label[index];
-    }
   }
 }
 
 void setLine(char* dest, char* src) {
   strncpy(dest, src, CHARS_AT_LINE);
-  for(int t = strlen(src); t < CHARS_AT_LINE; t++) {
+  for(int8_t t = strlen(src); t < CHARS_AT_LINE; t++) {
     dest[t] = ' ';
   }
 }
@@ -90,8 +87,8 @@ void ValuedParam::dec() {
 void ValuedParam::getLCDLines(char* line1, char* line2) {
   getScrollable(line1, name);
 
-  sprintf(line2, "%d (%d) %s", value, prevValue, unitNames[units]);
-  for(int t = strlen(line2); t < CHARS_AT_LINE; t++) {
+  snprintf(line2, CHARS_AT_LINE, "%d (%d) %s", value, prevValue, unitNames[units]);
+  for(int8_t t = strlen(line2); t < CHARS_AT_LINE; t++) {
     line2[t] = ' ';
   }
 }
@@ -111,7 +108,7 @@ void ExecParam::dec() {
 
 void ExecParam::getLCDLines(char* line1, char* line2) {
   getScrollable(line1, name);
-  strcpy(line2, "<-TAK     NIE->");
+  strncpy(line2, "<-TAK     NIE->", CHARS_AT_LINE);
 }
 
 SpecialParam::SpecialParam(uint8_t* cot, uint8_t* cwt, WorkMode* wm, ExecParamCallback ic, ExecParamCallback dc) 
@@ -132,22 +129,22 @@ void SpecialParam::dec() {
 
 void SpecialParam::getLCDLines(char* line1, char* line2) {
 
-  char data[16];
+  char data[CHARS_AT_LINE];
   switch(*workMode) {
     case WorkMode_STOP:
       setLine(line1, "Tryb: STOP");
-      sprintf(line2, "CO:%2d,  ->START", *coTemp);
+      snprintf(line2, CHARS_AT_LINE, "CO:%2d,  ->START", *coTemp);
       break;
       
     case WorkMode_RUNNING:
       setLine(line1, "PRACA");
-      sprintf(data, "CO:%2d, CW:%2d", *coTemp, *cwTemp);
+      snprintf(data, CHARS_AT_LINE, "CO:%2d, CW:%2d", *coTemp, *cwTemp);
       setLine(line2, data);
       break;
       
     case WorkMode_STANDBY:
       setLine(line1, "PODTRZYMANIE");
-      sprintf(data, "CO:%2d, CW:%2d", *coTemp, *cwTemp);
+      snprintf(data, CHARS_AT_LINE, "CO:%2d, CW:%2d", *coTemp, *cwTemp);
       setLine(line2, data);
       break;
   }
