@@ -64,10 +64,12 @@ static void refreshCurrentParamValue() {
   Serial.print(", paramValue="); 
   Serial.println(paramValue); 
 #endif
-  if (deviceId != NULL) {
+/* todo: debug test
+  if (deviceId != 0) {
     paramValue = commLink.requestParamValue(deviceId, paramIndex);
     currentMenu->setCurrentParamValue(paramValue);
   }
+  */
 }
 
 static void prevMenuItem() {
@@ -98,16 +100,15 @@ static void openFeederMenu() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:openFeederMenu"); 
 #endif
-  currentMenu = feederMenu;
-  currentMenu->activate();  
+  feederMenu->activate();  
 }
 
 static void openPumpsMenu() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:openPumpsMenu"); 
+  Serial.println((int)pumpsMenu, HEX); 
 #endif
-  currentMenu = pumpsMenu;
-  currentMenu->activate();
+  pumpsMenu->activate();
 }
 
 static void onSendChangedParam() {
@@ -180,4 +181,3 @@ void defineMenus() {
   pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
   currentMenu = mainMenu;
 }
-

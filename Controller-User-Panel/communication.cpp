@@ -97,7 +97,7 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
     Wire.requestFrom((int)deviceId, 4);
     uint8_t paramType = Wire.read();
     uint8_t paramUnit = (paramType & I2C_PARAM_UNIT_MASK) >> 4;
-    paramType &= !I2C_PARAM_UNIT_MASK;
+    paramType &= ~I2C_PARAM_UNIT_MASK;
     
     uint8_t minValue = Wire.read();
     uint8_t maxValue = Wire.read();
@@ -130,13 +130,24 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
   Serial.println(paramUnit);
 #endif
 
-    Param* param;
     if (paramType == I2C_PARAM_TYPE_EXEC) {
       //add remote exec param if needed
-      param = NULL;
-      
+      params[t] = NULL;
+#ifdef DEBUG_COMMUNICATION
+      Serial.println("Unexpected param of type EXEC");
+#endif
+
     } else if (paramType == I2C_PARAM_TYPE_VALUE) {
       params[t] = new ValuedParam(name, paramUnit, t, minValue, maxValue);
+#ifdef DEBUG_COMMUNICATION
+      Serial.print("New Value Param at addr:");
+      Serial.println((int)params[t], HEX);
+#endif
+
+    } else {
+#ifdef DEBUG_COMMUNICATION
+      Serial.println("Unknown type of remote param.");
+#endif      
     }
   }
 #ifdef DEBUG_COMMUNICATION

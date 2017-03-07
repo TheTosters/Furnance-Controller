@@ -14,7 +14,7 @@ typedef enum {
   EV_LONGPRESS
 } ButtonPressEvent;
 
-typedef void (*ButtonCallback)();
+typedef void (*ButtonCallback)(void);
 
 class Button {
   public:

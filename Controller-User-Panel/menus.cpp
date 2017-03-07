@@ -29,7 +29,11 @@ Menu::Menu(uint8_t deviceId, Param** menuItems, uint8_t count, ExecMenuCallback 
 : remoteDeviceId(deviceId), params(menuItems), paramsCount(count), currentIndex(0), onActivate(onAct) {
   
 }
-    
+
+Menu::~Menu() {
+  Serial.println("DESTROY MENU");
+}
+
 void Menu::render() {
   char line1[17]={0}, line2[17]={0};
   params[currentIndex]->getLCDLines(line1, line2);
@@ -53,27 +57,35 @@ void Menu::render() {
 }
 
 void Menu::activate() {
+#ifdef DEBUG_MENUS
   Serial.println("Menu:Activate");
+#endif
   currentMenu = this;
   resetCurrentParam();
   if (onActivate != NULL) {
     onActivate();
   }
+#ifdef DEBUG_MENUS
+  Serial.print("Menu:Activate current param index=");
+  Serial.print(currentIndex);
+  Serial.print(" currParamAddr:");
+  Serial.println((int)currentParam, HEX);
+#endif
 }
 
 void Menu::resetCurrentParam() {
-  currentParam = currentMenu->params[currentMenu->currentIndex];  
+  currentParam = params[currentIndex];  
 }
 
 void Menu::nextMenuItem() {
-  currentMenu->currentIndex++;
-  if (currentMenu->currentIndex >= currentMenu->paramsCount) {
-    currentMenu->currentIndex = 0;
+  currentIndex++;
+  if (currentIndex >= paramsCount) {
+    currentIndex = 0;
   }
   resetCurrentParam();
 #ifdef DEBUG_MENUS
   Serial.print("NextMenuItem: newIndex=");
-  Serial.print(currentMenu->currentIndex);
+  Serial.print(currentIndex);
   Serial.print(", currentMenu=");
   Serial.print((long int)currentMenu, HEX);
   Serial.print(", param=");
@@ -82,14 +94,14 @@ void Menu::nextMenuItem() {
 }
 
 void Menu::prevMenuItem() {
-  currentMenu->currentIndex--;
-  if (currentMenu->currentIndex < 0 ) {
-    currentMenu->currentIndex = currentMenu->paramsCount - 1;
+  currentIndex--;
+  if (currentIndex < 0 ) {
+    currentIndex = paramsCount - 1;
   }
   resetCurrentParam();
 #ifdef DEBUG_MENUS
   Serial.print("PrevMenuItem: newIndex=");
-  Serial.print(currentMenu->currentIndex);
+  Serial.print(currentIndex);
   Serial.print(", currentMenu=");
   Serial.print((long int)currentMenu, HEX);
   Serial.print(", param=");
@@ -98,14 +110,33 @@ void Menu::prevMenuItem() {
 }
 
 void Menu::incParam() {
+#ifdef DEBUG_MENUS
+  if (currentParam == NULL) {
+    Serial.println("Menu::incParam currentParam == NULL");
+    return;
+  }
+#endif
   currentParam->inc();
 }
 
 void Menu::decParam() {
+#ifdef DEBUG_MENUS
+  if (currentParam == NULL) {
+    Serial.println("Menu::decParam currentParam == NULL");
+    return;
+  }
+#endif
   currentParam->dec();
 }
 
 void Menu::setCurrentParamValue(uint8_t value) {
+#ifdef DEBUG_MENUS
+  if (currentParam == NULL) {
+    Serial.println("Menu::setCurrentParamValue currentParam == NULL");
+    return;
+  }
+#endif
+  
   if (currentParam->isRemotelyRefreshable()) {
     ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
     tmp->setValue(value);
@@ -113,6 +144,12 @@ void Menu::setCurrentParamValue(uint8_t value) {
 }
 
 void Menu::getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue) {
+#ifdef DEBUG_MENUS
+  if (currentParam == NULL) {
+    Serial.println("Menu::getCurrentParamInfo currentParam == NULL");
+    return;
+  }
+#endif
   if (currentParam->isRemotelyRefreshable()) {
     ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
     *deviceId = remoteDeviceId;

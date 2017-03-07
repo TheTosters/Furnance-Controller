@@ -86,7 +86,6 @@ void ValuedParam::dec() {
 
 void ValuedParam::getLCDLines(char* line1, char* line2) {
   getScrollable(line1, name);
-
   snprintf(line2, CHARS_AT_LINE, "%d (%d) %s", value, prevValue, unitNames[units]);
   for(int8_t t = strlen(line2); t < CHARS_AT_LINE; t++) {
     line2[t] = ' ';
@@ -99,11 +98,19 @@ ExecParam::ExecParam(char* n, ExecParamCallback ac, ExecParamCallback ec)
 }
     
 void ExecParam::inc() {
-  actionCallback();
+  if (actionCallback != NULL) {
+    actionCallback();
+  } else {
+    Serial.println("No ENTER callback present");
+  }
 }
 
 void ExecParam::dec() {
-  exitCallback();
+  if (exitCallback != NULL) {
+    exitCallback();
+  } else {
+    Serial.println("No EXIT callback present");
+  }
 }
 
 void ExecParam::getLCDLines(char* line1, char* line2) {

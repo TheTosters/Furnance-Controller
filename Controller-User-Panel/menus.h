@@ -17,12 +17,12 @@ extern Button* buttonEnter;
 extern LiquidCrystal lcd;
 extern Menu* currentMenu;
 
-typedef void (*ExecMenuCallback)();
+typedef void (*ExecMenuCallback)(void);
 
 class Menu {
   public:
     Menu(uint8_t remoteDeviceId, Param** menuItems, uint8_t count, ExecMenuCallback onActivate);
-    
+    ~Menu();
     void      render();
     void      activate();
     void      nextMenuItem();
