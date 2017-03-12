@@ -164,3 +164,7 @@ void Menu::saveParamValue(){
   commLink.sendParamChange(remoteDeviceId, currentIndex, tmp->getValue());
 }
 
+void Menu::restoreParamValue() {
+  currentParam->restorePrevious();
+}
+

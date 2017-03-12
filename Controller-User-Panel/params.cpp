@@ -8,8 +8,9 @@ static uint8_t labelLen = 0;
 static unsigned long lastMillis = 0;
 static int scrollDelay = 0;
 static char* curLabel = NULL;
+bool isParamEditing = false;
 
-static char* unitNames[] = {"sek", "min", "stC", "%"};
+static char* unitNames[] = {"sek", "min", "\xef\x43", "%"};
 
 void clearRenderCache() {
   scrollPos = 0;
@@ -74,6 +75,10 @@ Param::~Param() {
   name = NULL;
 }
 
+void Param::restorePrevious() {
+  //empty by default
+}
+
 bool Param::isRemotelyRefreshable() {
   return false;
 }
@@ -85,6 +90,10 @@ ValuedParam::ValuedParam(char* name, uint8_t _units, uint8_t min, uint8_t max)
 
 bool ValuedParam::isRemotelyRefreshable() {
   return true;
+}
+
+void ValuedParam::restorePrevious() {
+  value = prevValue;
 }
 
 void ValuedParam::inc() {
@@ -103,10 +112,16 @@ void ValuedParam::dec() {
 
 void ValuedParam::getLCDLines(char* line1, char* line2) {
   getScrollable(line1, name);
-  snprintf(line2, CHARS_AT_LINE, "%d (%d) %s", value, prevValue, unitNames[units]);
+  if (isParamEditing) {
+    snprintf(line2, CHARS_AT_LINE, "%d/%d %s", value, prevValue, unitNames[units]);
+    
+  } else {
+    snprintf(line2, CHARS_AT_LINE, "%d %s", value, unitNames[units]);
+  }
   for(int8_t t = strlen(line2); t < CHARS_AT_LINE; t++) {
     line2[t] = ' ';
   }
+//snprintf(line2, CHARS_AT_LINE, "%x %c", value, value);
 }
 
 ExecParam::ExecParam(char* n, ExecParamCallback ac, ExecParamCallback ec)
@@ -136,7 +151,12 @@ void ExecParam::dec() {
 
 void ExecParam::getLCDLines(char* line1, char* line2) {
   getScrollable(line1, name);
-  strncpy(line2, "<-TAK     NIE->", CHARS_AT_LINE);
+  if (exitCallback == NULL) {
+    strncpy(line2, "        \x7eOtworz", CHARS_AT_LINE);
+    
+  } else {
+    strncpy(line2, "\x7eTAK        \xd5NIE", CHARS_AT_LINE);
+  }
 }
 
 SpecialParam::SpecialParam(uint8_t* cot, uint8_t* cwt, WorkMode* wm, ExecParamCallback ic, ExecParamCallback dc) 
@@ -161,7 +181,7 @@ void SpecialParam::getLCDLines(char* line1, char* line2) {
   switch(*workMode) {
     case WorkMode_STOP:
       setLine(line1, "Tryb: STOP");
-      snprintf(line2, CHARS_AT_LINE, "CO:%2d,  ->START", *coTemp);
+      snprintf(line2, CHARS_AT_LINE, "CO:%2d,   \x7eSTART", *coTemp);
       break;
       
     case WorkMode_RUNNING:

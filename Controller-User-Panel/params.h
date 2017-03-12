@@ -13,6 +13,7 @@ class Param {
     virtual void  dec() = 0;
     virtual void  getLCDLines(char* line1, char* line2) = 0;
     virtual bool  isRemotelyRefreshable();
+    virtual void  restorePrevious();
   protected:
       char*       name;
 };
@@ -24,7 +25,8 @@ class ValuedParam : public Param {
     virtual void inc() override;
     virtual void dec() override;
     virtual void getLCDLines(char* line1, char* line2) override;
-    virtual bool  isRemotelyRefreshable() override;
+    virtual bool isRemotelyRefreshable() override;
+    virtual void restorePrevious() override;
 
     inline void setValue(uint8_t val) { value = val; prevValue = val;}
     inline uint8_t getValue() {return value;}
@@ -71,6 +73,7 @@ class SpecialParam : public Param {
     ExecParamCallback   decCallback;
 };
 
+extern bool isParamEditing;
 void clearRenderCache();
 #endif
 

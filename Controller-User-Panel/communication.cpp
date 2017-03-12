@@ -87,13 +87,19 @@ void Communication::fetchParamDescription(uint8_t deviceId, uint8_t index, Param
   
   Wire.requestFrom((int)deviceId, 4);
   uint8_t paramType = Wire.read();
-  uint8_t paramUnit = (paramType & I2C_PARAM_UNIT_MASK) >> 4;
+  uint8_t paramUnit = ((paramType & I2C_PARAM_UNIT_MASK) >> 4) - 1;
   paramType &= ~I2C_PARAM_UNIT_MASK;
   
   uint8_t minValue = Wire.read();
   uint8_t maxValue = Wire.read();
   uint8_t nameSize = Wire.read();
 
+  if (nameSize > 32) {
+    nameSize = 32;
+#ifdef DEBUG_COMMUNICATION
+  Serial.println("Name size overflow!");
+#endif
+  }
   Wire.beginTransmission(deviceId);
   Wire.write(I2C_CMD_GENERAL_GET_PARAM_NAME);
   Wire.write(index);

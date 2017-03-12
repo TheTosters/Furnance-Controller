@@ -26,16 +26,6 @@ static Param* mainMenuParams[] = {
   new ExecParam("Menu pomp", openPumpsMenu, NULL),
 };
 
-uint8_t * heapptr, * stackptr;
-void check_mem() {
-  stackptr = (uint8_t *)malloc(4);          // use stackptr temporarily
-  heapptr = stackptr;                     // save value of heap pointer
-  free(stackptr);      // free up the memory again (sets stackptr to 0)
-  stackptr =  (uint8_t *)(SP);           // save value of stack pointer
-  Serial.print("Free mem:");
-  Serial.println((int)(stackptr-heapptr), DEC);
-}
-
 static void mainMenuWorkModeStartStop() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:mainMenuWorkModeStartStop"); 
@@ -92,7 +82,6 @@ static void openPumpsMenu() {
   Serial.println((int)pumpsMenu, HEX); 
 #endif
   pumpsMenu->activate();
-  check_mem();
 }
 
 static void onSendChangedParam() {
@@ -100,6 +89,7 @@ static void onSendChangedParam() {
   Serial.println("Menu:onSendChangedParam");
 #endif
   currentMenu->saveParamValue();
+  isParamEditing = false;
 }
 
 static void editParamDec() {
@@ -116,14 +106,24 @@ static void editParamInc() {
   currentMenu->incParam();
 }
 
+static void onCancelParamEdit() {
+#ifdef DEBUG_MENUS
+  Serial.println("Menu:onCancelParamEdit"); 
+#endif
+  isParamEditing = false;
+  currentMenu->restoreParamValue();
+  onRemoteMenuActivate();
+}
+
 static void startEditParam() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:startEditParam"); 
 #endif
   buttonLeft->setOnShortPressCallback(editParamDec);
   buttonRight->setOnShortPressCallback(editParamInc);
-  buttonExit->setOnShortPressCallback(onRemoteMenuActivate);
+  buttonExit->setOnShortPressCallback(onCancelParamEdit);
   buttonEnter->setOnShortPressCallback(onSendChangedParam);
+  isParamEditing = true;
 }
 
 static void onRemoteMenuActivate() {
@@ -135,6 +135,7 @@ static void onRemoteMenuActivate() {
   // Left, Right - menu navigation
   // Ok - select param to edit
   // Exit - move to main menu
+  isParamEditing = false;
   clearButtonsCallbacks();
   buttonLeft->setOnShortPressCallback(prevMenuItem);
   buttonRight->setOnShortPressCallback(nextMenuItem);
@@ -146,6 +147,7 @@ static void onMainMenuActivate() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:onMainMenuActivate"); 
 #endif
+  isParamEditing = false;
   clearButtonsCallbacks();
   buttonLeft->setOnShortPressCallback(prevMenuItem);
   buttonRight->setOnShortPressCallback(nextMenuItem);
