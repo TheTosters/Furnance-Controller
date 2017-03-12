@@ -31,6 +31,7 @@
 
 void setup() {
   lcd.begin(16,2);
+  while(!Serial);
   Serial.begin(57600);
   Serial.println("---- BOOT ---");
 
@@ -57,10 +58,6 @@ void loop() {
 #ifdef DEBUG_FREE_MEM
   check_mem();
 #endif
-//  if (currentMenu == NULL) {
-//    //this will communicate with other MCU and build valid menus for them
-//    defineMenus();
-//  }
 
   buttonLeft->update();
   buttonRight->update();

@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 
-#define DEBUG_MENUS 1
+// #define DEBUG_MENUS 1
 
 class Param;
 class Button;

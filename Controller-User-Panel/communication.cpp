@@ -3,6 +3,7 @@
 #include "communication_consts.h"
 #include "Params.h"
 #include "menus.h"
+#include "menu_handling.h"
 
 #define SECONDS_TO_MS(x) ((uint32_t)x * 1000)
 #define MINUTES_TO_MS(x) ((uint32_t)x * 60000)
@@ -58,11 +59,16 @@ void Communication::sendParamChange(uint8_t deviceId, uint8_t index, uint8_t new
   Wire.write(I2C_CMD_GENERAL_SET_PARAM);
   Wire.write(index);
   Wire.write(newValue);
-  Wire.endTransmission();    
+  Wire.endTransmission();
 }
 
 void Communication::getGeneralUpdate() {
-  //todo:
+  Wire.beginTransmission(I2C_DEVICE_PUMPS);
+  Wire.write(I2C_CMD_GET_CO_CW_TEMP);
+  Wire.endTransmission();
+  Wire.requestFrom(I2C_DEVICE_PUMPS, 2);
+  coTemp = Wire.read();
+  cwTemp = Wire.read();
 }
 
 Menu* Communication::getFeederMenu(ExecMenuCallback onActivate) {

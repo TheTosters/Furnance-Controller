@@ -2,7 +2,7 @@
 #ifndef __COMMUNICATION_H__
 #define __COMMUNICATION_H__
 
-#define DEBUG_COMMUNICATION 1
+// #define DEBUG_COMMUNICATION 1
 
 #include <Arduino.h>
 #include "menus.h"
