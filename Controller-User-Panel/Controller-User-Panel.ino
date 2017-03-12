@@ -32,11 +32,13 @@
 void setup() {
   lcd.begin(16,2);
   Serial.begin(57600);
+  Serial.println("---- BOOT ---");
 
   buttonLeft = new Button(BUTTON_LEFT, BUTTON_LEFT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonRight = new Button(BUTTON_RIGHT, BUTTON_RIGHT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonEnter = new Button(BUTTON_ENTER, BUTTON_EXIT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonExit = new Button(BUTTON_EXIT, BUTTON_ENTER_PIN, DEFAULT_LONGPRESS_LEN);
+  defineMenus();
 }
 
 #ifdef DEBUG_FREE_MEM
@@ -46,21 +48,19 @@ void check_mem() {
   heapptr = stackptr;                     // save value of heap pointer
   free(stackptr);      // free up the memory again (sets stackptr to 0)
   stackptr =  (uint8_t *)(SP);           // save value of stack pointer
+  Serial.print("Free mem:");
+  Serial.println((int)(stackptr-heapptr), DEC);
 }
 #endif
 
 void loop() {
 #ifdef DEBUG_FREE_MEM
   check_mem();
-  Serial.print("Free mem:");
-  Serial.println((int)(stackptr-heapptr), DEC);
 #endif
-  if (currentMenu == NULL) {
-    //this will communicate with other MCU and build valid menus for them
-    
-    defineMenus();
-    currentMenu->activate(); 
-  }
+//  if (currentMenu == NULL) {
+//    //this will communicate with other MCU and build valid menus for them
+//    defineMenus();
+//  }
 
   buttonLeft->update();
   buttonRight->update();
@@ -85,3 +85,4 @@ void loop() {
   
   currentMenu->render();
 }
+

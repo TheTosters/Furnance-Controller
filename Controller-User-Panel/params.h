@@ -71,4 +71,6 @@ class SpecialParam : public Param {
     ExecParamCallback   decCallback;
 };
 
+void clearRenderCache();
 #endif
+

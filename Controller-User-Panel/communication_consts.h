@@ -11,7 +11,9 @@
 #define I2C_CMD_GENERAL_GET_PARAM               21
 #define I2C_CMD_GENERAL_SET_PARAM               22
 #define I2C_CMD_GENERAL_GET_PARAMS_COUNT        23
-#define I2C_CMD_GENERAL_GET_PARAM_DESCRIPTION   24
+//one argument: index of parameter to dscribe
+#define I2C_CMD_GENERAL_GET_PARAM_DESCRIPTION   24  
+//one argument: index of parameter to get name
 #define I2C_CMD_GENERAL_GET_PARAM_NAME          25
 
 #define I2C_PARAM_TYPE_EXEC      0b00000001
@@ -25,3 +27,4 @@
 #define I2C_PARAM_UNIT_PERCENT   0b01000000
 
 #endif
+

@@ -26,6 +26,16 @@ static Param* mainMenuParams[] = {
   new ExecParam("Menu pomp", openPumpsMenu, NULL),
 };
 
+uint8_t * heapptr, * stackptr;
+void check_mem() {
+  stackptr = (uint8_t *)malloc(4);          // use stackptr temporarily
+  heapptr = stackptr;                     // save value of heap pointer
+  free(stackptr);      // free up the memory again (sets stackptr to 0)
+  stackptr =  (uint8_t *)(SP);           // save value of stack pointer
+  Serial.print("Free mem:");
+  Serial.println((int)(stackptr-heapptr), DEC);
+}
+
 static void mainMenuWorkModeStartStop() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:mainMenuWorkModeStartStop"); 
@@ -82,6 +92,7 @@ static void openPumpsMenu() {
   Serial.println((int)pumpsMenu, HEX); 
 #endif
   pumpsMenu->activate();
+  check_mem();
 }
 
 static void onSendChangedParam() {
@@ -150,5 +161,6 @@ void defineMenus() {
   mainMenu = new Menu(0, mainMenuParams, 3, onMainMenuActivate);
   //feederMenu = commLink.getFeederMenu(onRemoteMenuActivate);
   pumpsMenu = commLink.getPumpsMenu(onRemoteMenuActivate);
-  currentMenu = mainMenu;
+  mainMenu->activate();
 }
+

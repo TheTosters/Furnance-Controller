@@ -11,6 +11,14 @@ static char* curLabel = NULL;
 
 static char* unitNames[] = {"sek", "min", "stC", "%"};
 
+void clearRenderCache() {
+  scrollPos = 0;
+  labelLen = 0;
+  lastMillis = 0;
+  scrollDelay = 0;
+  curLabel = NULL;  
+}
+
 void getScrollable(char* line, char* label) {
   if (label != curLabel) {
     lastMillis = millis();
@@ -169,3 +177,4 @@ void SpecialParam::getLCDLines(char* line1, char* line2) {
       break;
   }
 }
+

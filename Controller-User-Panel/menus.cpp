@@ -35,8 +35,14 @@ Menu::~Menu() {
 }
 
 void Menu::render() {
+  if (currentParam == NULL) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("NULL PARAM");
+    return;
+  }
   char line1[17]={0}, line2[17]={0};
-  params[currentIndex]->getLCDLines(line1, line2);
+  currentParam->getLCDLines(line1, line2);
   uint8_t tmpHash = crc8(line1, 16);
   if (tmpHash == oldLine1Hash) {
     tmpHash = crc8(line2, 16);
@@ -74,9 +80,9 @@ void Menu::activate() {
 }
 
 void Menu::resetCurrentParam() {
-  if (params != NULL) {
+  if (remoteDeviceId == 0) {
     //local params handling
-    if (currentParam->isRemotelyRefreshable() == true) {
+    if (currentParam != NULL && currentParam->isRemotelyRefreshable() == true) {
       //if we are here then we was previously in remote menu and we have remote param, it's no longer needed. remove it.
       delete currentParam;
     }
@@ -84,13 +90,15 @@ void Menu::resetCurrentParam() {
     
   } else {
     //get remote Param
-    if (currentParam->isRemotelyRefreshable() == true) {
+    if (currentParam != NULL && currentParam->isRemotelyRefreshable() == true) {
       delete currentParam;
+      currentParam = NULL;
     }
     commLink.fetchParamDescription(remoteDeviceId, currentIndex, &currentParam);
     ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
     tmp->setValue( commLink.requestParamValue(remoteDeviceId, currentIndex) );
   }
+  clearRenderCache();
 }
 
 void Menu::nextMenuItem() {
@@ -155,3 +163,4 @@ void Menu::saveParamValue(){
 #endif
   commLink.sendParamChange(remoteDeviceId, currentIndex, tmp->getValue());
 }
+

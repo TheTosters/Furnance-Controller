@@ -93,7 +93,7 @@ void Communication::fetchParamDescription(uint8_t deviceId, uint8_t index, Param
   uint8_t minValue = Wire.read();
   uint8_t maxValue = Wire.read();
   uint8_t nameSize = Wire.read();
-  
+
   Wire.beginTransmission(deviceId);
   Wire.write(I2C_CMD_GENERAL_GET_PARAM_NAME);
   Wire.write(index);
@@ -104,6 +104,7 @@ void Communication::fetchParamDescription(uint8_t deviceId, uint8_t index, Param
     name[y] = Wire.read();
   }
   name[nameSize] = 0;
+  
 #ifdef DEBUG_COMMUNICATION
   Serial.print("  Param ");
   Serial.print(index);
@@ -160,4 +161,5 @@ Menu* Communication::getMenu(int deviceId, ExecMenuCallback onActivate) {
 
   return new Menu(deviceId, NULL, count, onActivate);
 }
+
 
