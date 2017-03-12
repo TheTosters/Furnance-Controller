@@ -13,7 +13,27 @@ static int16_t cyclicRun;
 static bool isCyclicRun;
 static unsigned long lastMillis;
 
+void resetConfigToDefault() {
+  logicConfig.minCWTemp = 35;
+  logicConfig.maxCWTemp = 40;
+  logicConfig.minCOTemp = 50;
+  logicConfig.maxCOTemp = 65;
+  logicConfig.heaterPumpCyclicRunDelay = 10;
+  logicConfig.heaterPumpCyclicRunDuration = 30;
+}
+
+void saveConfig() {
+  int eeAddress = 0;
+  EEPROM.put(eeAddress, workConfig);  
+}
+
+void loadConfig() {
+  int eeAddress = 0;
+  EEPROM.get(eeAddress, workConfig);  
+}
+
 void beginLogic() {
+  loadConfig();
   pinMode(PUMP_CO, OUTPUT);
   pinMode(PUMP_CW, OUTPUT);
   pinMode(PUMP_HEATERS, OUTPUT);

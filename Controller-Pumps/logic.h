@@ -43,6 +43,6 @@ extern bool startedMode;
 void beginLogic();
 void updateLogic();
 void pumpRunning(uint8_t pompId, bool isOn);
-
+void saveConfig();
 }
 #endif

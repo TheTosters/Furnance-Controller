@@ -2,6 +2,9 @@
 #include "communication.h"
 #include "logic.h"
 #include "communication_consts.h"
+#include "temperature.h"
+
+#define DEBUG_COMMUNICATION 1
 
 //master want info about how many params can be configured in this MCU
 #define PARAM_GET_MENU_ITEMS_COUNT 1
@@ -17,6 +20,9 @@
 //master requested value of some param, this is start offset, so if param value is requested
 //then in requestedParam will be value (PARAM_VALUE_OFFSET + param index)
 #define PARAM_VALUE_OFFSET 90
+
+//master requested CO & CW temperatures
+#define PARAM_CO_CW 120
 
 #define SECONDS_TO_MS(x) ((uint32_t)x * 1000)
 #define MINUTES_TO_MS(x) ((uint32_t)x * 60000)
@@ -48,6 +54,22 @@ static ParamInfo paramsInfo[] = {
 void onI2cReceiveEvent(int bytesCount);
 void onI2cRequest();
 
+uint8_t applyBoundaries(uint8_t value, uint8_t paramIndex) {
+#ifdef DEBUG_COMMUNICATION
+  Serial.print("applyBoundaries value:");
+  Serial.print(value);
+  Serial.print(" min:");
+  Serial.print(paramsInfo[paramIndex].minValue);
+  Serial.print(" max:");
+  Serial.println(paramsInfo[paramIndex].maxValue);
+#endif
+
+  value = value < paramsInfo[paramIndex].minValue ? paramsInfo[paramIndex].minValue : value;
+  value = value > paramsInfo[paramIndex].maxValue ? paramsInfo[paramIndex].maxValue : value;
+
+  return value;
+}
+
 bool requestInRange(uint8_t startRange, uint8_t endRange) {
   return (requestedParam >= startRange) && (requestedParam <= endRange);
 }
@@ -59,7 +81,13 @@ void initCommunication() {
 }
 
 void onI2cRequest() {
-  if (requestedParam == PARAM_GET_MENU_ITEMS_COUNT) {
+  if (requestedParam == PARAM_CO_CW ) {
+    uint8_t tmp = (uint8_t)temperature[TEMP_CO];
+    Wire.write(tmp);
+    tmp = (uint8_t)temperature[TEMP_CW];
+    Wire.write(tmp);
+
+  } else if (requestedParam == PARAM_GET_MENU_ITEMS_COUNT) {
     Wire.write(6);
     
   } else if (requestInRange(PARAM_INFO_OFFSET, PARAM_INFO_OFFSET + 29)) {
@@ -101,51 +129,62 @@ void onI2cRequest() {
         Wire.write(0);
         break;
     }
+    
   }
 }
 
 void changeParamValue(uint8_t paramIndex, uint8_t value) {
+  value = applyBoundaries(value, paramIndex);
   switch(paramIndex) {
     case 0:
-        logicConfig.minCWTemp = value;
-        break;
-      case 1:
-        logicConfig.maxCWTemp = value;
-        break;
-      case 2:
-        logicConfig.minCOTemp = value;
-        break;
-      case 3:
-        logicConfig.maxCOTemp = value;
-        break;
-      case 4:
-        logicConfig.heaterPumpCyclicRunDelay = MINUTES_TO_MS(value);
-        break;
-      case 5:
-        logicConfig.heaterPumpCyclicRunDuration = SECONDS_TO_MS(value);
-        break;
+      logicConfig.minCWTemp = value;
+      break;
+    case 1:
+      logicConfig.maxCWTemp = value;
+      break;
+    case 2:
+      logicConfig.minCOTemp = value;
+      break;
+    case 3:
+      logicConfig.maxCOTemp = value;
+      break;
+    case 4:
+      logicConfig.heaterPumpCyclicRunDelay = MINUTES_TO_MS(value);
+      break;
+    case 5:
+      logicConfig.heaterPumpCyclicRunDuration = SECONDS_TO_MS(value);
+      break;
 
-      default:
-        break;
-    }
+    default:
+      break;
+  }
 }
 
 void onI2cReceiveEvent(int bytesCount) {
 
   uint8_t cmd = Wire.read();
-  uint8_t cmdValue = (bytesCount == 2) ? Wire.read() : 0;
+  uint8_t cmdIndex = (bytesCount >= 2) ? Wire.read() : 0;
+  uint8_t cmdValue = (bytesCount == 3) ? Wire.read() : 0;
+#ifdef DEBUG_COMMUNICATION
+  Serial.print("onI2cReceiveEvent cmd:");
+  Serial.print(cmd);
+  Serial.print(" index:");
+  Serial.print(cmdIndex);
+  Serial.print(" value:");
+  Serial.println(cmdValue);
+#endif
 
   switch(cmd) {
     case I2C_CMD_GENERAL_SET_WORKMODE:
-      startedMode = cmdValue != WorkMode_STOP;
+      startedMode = cmdIndex != WorkMode_STOP;
       break;
     
     case I2C_CMD_GENERAL_GET_PARAM:
-      requestedParam = PARAM_VALUE_OFFSET + cmdValue;
+      requestedParam = PARAM_VALUE_OFFSET + cmdIndex;
       break;
     
     case I2C_CMD_GENERAL_SET_PARAM:
-      changeParamValue(cmdValue, Wire.read());
+      changeParamValue(cmdIndex, cmdValue);
       break;
     
     case I2C_CMD_GENERAL_GET_PARAMS_COUNT:
@@ -153,12 +192,20 @@ void onI2cReceiveEvent(int bytesCount) {
       break;
     
     case I2C_CMD_GENERAL_GET_PARAM_DESCRIPTION:
-      requestedParam = PARAM_INFO_OFFSET + cmdValue;
+      requestedParam = PARAM_INFO_OFFSET + cmdIndex;
       break;
     
     case I2C_CMD_GENERAL_GET_PARAM_NAME:
-      requestedParam = PARAM_NAME_OFFSET + cmdValue;
+      requestedParam = PARAM_NAME_OFFSET + cmdIndex;
       break;
-    
+
+    case I2C_CMD_GET_CO_CW_TEMP:
+      requestedParam = PARAM_CO_CW;
+      break;
+
+    default:
+#ifdef DEBUG_COMMUNICATION
+      Serial.println("Unknown command type");
+#endif
   }
 }

@@ -11,12 +11,13 @@
 #include "logic.h"
 #include "Communication.h"
 
-#define DUMP_TO_SERIAL 1
+#define DEBUG_MAIN 1
+//to debug communication enable DEBUG_COMMUNICATION in communication.cpp
 
 void setup() {
-#ifdef DUMP_TO_SERIAL
+#ifdef DEBUG_MAIN
   while(!Serial);
-  Serial.begin(9600);
+  Serial.begin(57600);
 #endif
 
   beginTemperatures();
@@ -34,7 +35,7 @@ void emergencyMode() {
 
 void loop() {
   if (sensorsError == true) {
-#ifdef DUMP_TO_SERIAL
+#ifdef DEBUG_MAIN
   Serial.println("Hardware error, can't work!");
 #endif
     //temperature sensors are not working as expected.
@@ -45,7 +46,7 @@ void loop() {
   updateTemperatures();
   updateLogic();
   
-#ifdef DUMP_TO_SERIAL
+#ifdef DEBUG_MAIN
   Serial.print("Temp C.O.:");
   Serial.print(temperature[TEMP_CO]);
   Serial.println(" st.C");
