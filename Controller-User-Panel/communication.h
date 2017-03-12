@@ -27,6 +27,7 @@ class Communication {
     Menu* getFeederMenu(ExecMenuCallback onActivate);
     Menu* getPumpsMenu(ExecMenuCallback onActivate);
     void fetchParamDescription(uint8_t deviceId, uint8_t index, Param** outParam);
+    void waitForDevice(uint8_t deviceId);
   private:
     Menu* getMenu(int deviceId, ExecMenuCallback onActivate);
 };

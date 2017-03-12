@@ -25,10 +25,14 @@
 //master requested CO & CW temperatures
 #define PARAM_CO_CW 120
 
+//master will request echo 
+//in requestedParam will be value (PARAM_SYNC_UP + param index)
+#define PARAM_SYNC_UP 121
+
 #define SECONDS_TO_MS(x) ((uint32_t)x * 1000)
 #define MINUTES_TO_MS(x) ((uint32_t)x * 60000)
-#define MS_TO_SECONDS(x) (x / 1000)
-#define MS_TO_MINUTES(x) (x / 60000)
+#define MS_TO_SECONDS(x) (uint8_t)(x / 1000)
+#define MS_TO_MINUTES(x) (uint8_t)(x / 60000)
 #define PERCENT_TO_VAL(prc, maxVal) (((uint32_t)prc * maxVal) / 100)
 #define VAL_TO_PERCENT(val, maxVal) (((uint32_t)val * 100) / maxVal)
 
@@ -43,10 +47,10 @@ static uint8_t requestedParam;
 
 //WARNING: Wire libreary limit is 32b, so length of name can't exceed it!
 static ParamInfo paramsInfo[] = {
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=20, .maxValue=60, .name="Min.temp. wody CW"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=20, .maxValue=60, .name="Max.temp. wody CW"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=30, .maxValue=85, .name="Min.temp. kotla CO"},
-  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=30, .maxValue=85, .name="Max.temp. kotla CO"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=20, .maxValue=60, .name="Min.temp. CW"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=20, .maxValue=60, .name="Max.temp. CW"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=30, .maxValue=85, .name="Min.temp. CO"},
+  {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_DEG_C, .minValue=30, .maxValue=85, .name="Max.temp. CO"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_MINUTES, .minValue=1, .maxValue=255, .name="Cykliczne zalaczanie pomp"},
   {.typeAndUnit = I2C_PARAM_TYPE_VALUE | I2C_PARAM_UNIT_SECONDS, .minValue=2, .maxValue=255, .name="Czas pracy pomp w cykl.zal."}  
 };
@@ -82,6 +86,12 @@ void initCommunication() {
 }
 
 void onI2cRequest() {
+#ifdef DEBUG_COMMUNICATION
+  if (requestedParam != PARAM_CO_CW) {
+    Serial.print("onI2cRequest:");
+    Serial.println(requestedParam);
+  }
+#endif
   if (requestedParam == PARAM_CO_CW ) {
     uint8_t tmp = (uint8_t)temperature[TEMP_CO];
     Wire.write(tmp);
@@ -89,7 +99,7 @@ void onI2cRequest() {
     Wire.write(tmp);
 
   } else if (requestedParam == PARAM_GET_MENU_ITEMS_COUNT) {
-    Wire.write(6);
+    Wire.write(6);  //note in onI2cReceiveEvent there is cmdIndex limiter, fix it also if you change this!
     
   } else if (requestInRange(PARAM_INFO_OFFSET, PARAM_INFO_OFFSET + 29)) {
     int index = requestedParam - PARAM_INFO_OFFSET;
@@ -110,27 +120,57 @@ void onI2cRequest() {
     switch(requestedParam - PARAM_VALUE_OFFSET) {
       case 0:
         Wire.write( logicConfig.minCWTemp );
+#ifdef DEBUG_COMMUNICATION
+        Serial.print("minCWTemp:");
+        Serial.println(logicConfig.minCWTemp);
+#endif
         break;
       case 1:
         Wire.write( logicConfig.maxCWTemp );
+#ifdef DEBUG_COMMUNICATION
+        Serial.print("maxCWTemp:");
+        Serial.println(logicConfig.maxCWTemp);
+#endif
         break;
       case 2:
         Wire.write( logicConfig.minCOTemp );
+#ifdef DEBUG_COMMUNICATION
+        Serial.print("minCOTemp:");
+        Serial.println(logicConfig.minCOTemp);
+#endif
         break;
       case 3:
         Wire.write( logicConfig.maxCOTemp );
+#ifdef DEBUG_COMMUNICATION
+        Serial.print("maxCOTemp:");
+        Serial.println(logicConfig.maxCOTemp);
+#endif
         break;
       case 4:
         Wire.write( MS_TO_MINUTES(logicConfig.heaterPumpCyclicRunDelay) );
+#ifdef DEBUG_COMMUNICATION
+        Serial.print("heaterPumpCyclicRunDelay:");
+        Serial.println(MS_TO_MINUTES(logicConfig.heaterPumpCyclicRunDelay));
+#endif
         break;
       case 5:
         Wire.write( MS_TO_SECONDS(logicConfig.heaterPumpCyclicRunDuration) );
+#ifdef DEBUG_COMMUNICATION
+        Serial.print("heaterPumpCyclicRunDuration:");
+        Serial.println(MS_TO_SECONDS(logicConfig.heaterPumpCyclicRunDuration));
+#endif
         break;
       default:
         Wire.write(0);
         break;
     }
     
+  } else if (requestInRange(PARAM_SYNC_UP, PARAM_SYNC_UP + 9)) {
+    Wire.write(requestedParam - PARAM_SYNC_UP);
+#ifdef DEBUG_COMMUNICATION
+    Serial.print("Sync Echo:");
+    Serial.println(requestedParam - PARAM_SYNC_UP);
+#endif
   }
 }
 
@@ -167,14 +207,17 @@ void onI2cReceiveEvent(int bytesCount) {
   uint8_t cmdIndex = (bytesCount >= 2) ? Wire.read() : 0;
   uint8_t cmdValue = (bytesCount == 3) ? Wire.read() : 0;
 #ifdef DEBUG_COMMUNICATION
-  Serial.print("onI2cReceiveEvent cmd:");
-  Serial.print(cmd);
-  Serial.print(" index:");
-  Serial.print(cmdIndex);
-  Serial.print(" value:");
-  Serial.println(cmdValue);
+  if (cmd != I2C_CMD_GET_CO_CW_TEMP) {
+    //without this condition will be a lot of messages
+    Serial.print("onI2cReceiveEvent cmd:");
+    Serial.print(cmd);
+    Serial.print(" index:");
+    Serial.print(cmdIndex);
+    Serial.print(" value:");
+    Serial.println(cmdValue);
+  }
 #endif
-
+  
   switch(cmd) {
     case I2C_CMD_GENERAL_SET_WORKMODE:
       startedMode = cmdIndex != WorkMode_STOP;
@@ -202,6 +245,10 @@ void onI2cReceiveEvent(int bytesCount) {
 
     case I2C_CMD_GET_CO_CW_TEMP:
       requestedParam = PARAM_CO_CW;
+      break;
+    
+    case I2C_CMD_GENERAL_SYNC:
+      requestedParam = PARAM_SYNC_UP + cmdIndex;
       break;
 
     default:

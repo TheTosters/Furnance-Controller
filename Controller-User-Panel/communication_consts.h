@@ -15,9 +15,11 @@
 #define I2C_CMD_GENERAL_GET_PARAM_DESCRIPTION   24  
 //one argument: index of parameter to get name
 #define I2C_CMD_GENERAL_GET_PARAM_NAME          25
+//one argument: value to be echo by slave (0-10)
+#define I2C_CMD_GENERAL_SYNC                    26
 
 //command for pumps module only
-#define I2C_CMD_GET_CO_CW_TEMP                  26
+#define I2C_CMD_GET_CO_CW_TEMP                  36
 
 #define I2C_PARAM_TYPE_EXEC      0b00000001
 #define I2C_PARAM_TYPE_VALUE     0b00000010

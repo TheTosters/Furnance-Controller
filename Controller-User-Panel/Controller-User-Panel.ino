@@ -16,6 +16,7 @@
 #include "menus.h"
 #include "menu_handling.h"
 #include "communication.h"
+#include "communication_consts.h"
 
 #define BUTTON_LEFT_PIN   10    //D10
 #define BUTTON_RIGHT_PIN  11    //D12
@@ -39,6 +40,8 @@ void setup() {
   buttonRight = new Button(BUTTON_RIGHT, BUTTON_RIGHT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonEnter = new Button(BUTTON_ENTER, BUTTON_EXIT_PIN, DEFAULT_LONGPRESS_LEN);
   buttonExit = new Button(BUTTON_EXIT, BUTTON_ENTER_PIN, DEFAULT_LONGPRESS_LEN);
+  commLink.waitForDevice(I2C_DEVICE_PUMPS);
+  //commLink.waitForDevice(I2C_DEVICE_FEEDER);
   defineMenus();
 }
 

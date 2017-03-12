@@ -79,6 +79,37 @@ Menu* Communication::getPumpsMenu(ExecMenuCallback onActivate) {
   return getMenu(I2C_DEVICE_PUMPS, onActivate);
 }
 
+void Communication::waitForDevice(uint8_t deviceId) {
+#ifdef DEBUG_COMMUNICATION
+  Serial.print("Syncup I2C device:");
+  Serial.print(deviceId);
+#endif
+
+  int8_t count = 0, echo = 4, retEcho = 0;
+  while(true) {
+    Wire.beginTransmission(deviceId);
+    Wire.write(I2C_CMD_GENERAL_SYNC);
+    Wire.write(echo);
+    Wire.endTransmission();
+    Wire.requestFrom(deviceId, 1);
+    retEcho = Wire.read();
+    if (retEcho == echo) {
+      count++;
+    } else {
+      count = 0;
+    }
+    if (count == 10) {
+#ifdef DEBUG_COMMUNICATION
+  Serial.println("Syncup Done:");
+#endif
+      return;
+    }
+    echo ++;
+    echo %= 9;
+    echo = echo == 0 ? 1 : echo;  //never can be 0!
+  }
+}
+
 void Communication::fetchParamDescription(uint8_t deviceId, uint8_t index, Param** outParam) {
 #ifdef DEBUG_COMMUNICATION
   Serial.print("Fetching param I2C device:");

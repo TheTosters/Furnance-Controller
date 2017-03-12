@@ -19,11 +19,11 @@
 extern "C" {
 
 typedef struct {
-  int8_t minCWTemp;
-  int8_t maxCWTemp;
+  uint8_t minCWTemp;
+  uint8_t maxCWTemp;
 
-  int8_t minCOTemp;
-  int8_t maxCOTemp;
+  uint8_t minCOTemp;
+  uint8_t maxCOTemp;
 
   int32_t    heaterPumpCyclicRunDelay;
   int32_t    heaterPumpCyclicRunDuration;

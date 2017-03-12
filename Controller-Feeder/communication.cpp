@@ -18,6 +18,10 @@
 //then in requestedParam will be value (PARAM_VALUE_OFFSET + param index)
 #define PARAM_VALUE_OFFSET 90
 
+//master will request echo 
+//in requestedParam will be value (PARAM_SYNC_UP + param index)
+#define PARAM_SYNC_UP 121
+
 #define SECONDS_TO_MS(x) ((uint32_t)x * 1000)
 #define MINUTES_TO_MS(x) ((uint32_t)x * 60000)
 #define MS_TO_SECONDS(x) (x / 1000)
@@ -105,6 +109,12 @@ void onI2cRequest() {
         Wire.write(0);
         break;
     }
+  } else if (requestInRange(PARAM_SYNC_UP, PARAM_SYNC_UP + 9)) {
+    Wire.write(requestedParam - PARAM_SYNC_UP);
+#ifdef DEBUG_COMMUNICATION
+    Serial.print("Sync Echo:");
+    Serial.println(requestedParam - PARAM_SYNC_UP);
+#endif
   }
 }
 
@@ -168,6 +178,10 @@ void onI2cReceiveEvent(int bytesCount) {
     case I2C_CMD_GENERAL_GET_PARAM_NAME:
       requestedParam = PARAM_NAME_OFFSET + cmdValue;
       break;
-    
+      
+    case I2C_CMD_GENERAL_SYNC:
+      requestedParam = PARAM_SYNC_UP + cmdIndex;
+      break;
+
   }
 }
