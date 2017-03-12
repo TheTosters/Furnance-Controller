@@ -2,9 +2,13 @@
 #define __UI_H__
 
 #include <Arduino.h>
+
+#define DEBUG_PARAMS 1
+
 class Param {
   public:
     Param(char* name);
+    ~Param();
     virtual void  inc() = 0;
     virtual void  dec() = 0;
     virtual void  getLCDLines(char* line1, char* line2) = 0;
@@ -15,8 +19,8 @@ class Param {
 
 class ValuedParam : public Param {
   public:
-    ValuedParam(char* name, uint8_t units, uint8_t remoteIndex, uint8_t min, uint8_t max);
-    
+    ValuedParam(char* name, uint8_t units, uint8_t min, uint8_t max);
+
     virtual void inc() override;
     virtual void dec() override;
     virtual void getLCDLines(char* line1, char* line2) override;
@@ -24,12 +28,10 @@ class ValuedParam : public Param {
 
     inline void setValue(uint8_t val) { value = val; prevValue = val;}
     inline uint8_t getValue() {return value;}
-    inline uint8_t getRemoteIndex() {return remoteIndex;}
     inline uint8_t getUnits() {return units;}
   private:
     uint8_t minValue, maxValue;
     uint8_t value;
-    uint8_t remoteIndex;
     uint8_t prevValue;
     uint8_t units;
 };

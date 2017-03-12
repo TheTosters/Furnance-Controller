@@ -6,9 +6,10 @@
 
 //DEBUGGING CONTROL
 //#define DEBUG_KEYS 1
-//to debug menus go to menus.h and uncomment DEBUG_MENUS
 //#define DEBUG_FREE_MEM 1
+//to debug menus go to menus.h and uncomment DEBUG_MENUS
 //to debug communication for to communication.h and uncomment DEBUG_COMMUNICATION
+//to debug Params set DEBUG_PARAMS in Params.h
 
 #include "buttons.h"
 #include "params.h"

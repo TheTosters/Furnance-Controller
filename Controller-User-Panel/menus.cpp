@@ -1,12 +1,12 @@
 #include "menus.h"
 #include <LiquidCrystal.h>
 #include "params.h"
+#include "communication.h"
 
 LiquidCrystal lcd(7, 6, 5, 4, 3, 2);  //PINS: D7, D6, D5, D4, D3, D2
 
 Menu* currentMenu = NULL;
 static Param* currentParam = NULL;
-//static char oldLine1[17]={0}, oldLine2[17]={0};
 static uint8_t oldLine1Hash = 0, oldLine2Hash = 0;
 
 int8_t crc8(const uint8_t *addr, uint8_t len)
@@ -74,7 +74,23 @@ void Menu::activate() {
 }
 
 void Menu::resetCurrentParam() {
-  currentParam = params[currentIndex];  
+  if (params != NULL) {
+    //local params handling
+    if (currentParam->isRemotelyRefreshable() == true) {
+      //if we are here then we was previously in remote menu and we have remote param, it's no longer needed. remove it.
+      delete currentParam;
+    }
+    currentParam = params[currentIndex];
+    
+  } else {
+    //get remote Param
+    if (currentParam->isRemotelyRefreshable() == true) {
+      delete currentParam;
+    }
+    commLink.fetchParamDescription(remoteDeviceId, currentIndex, &currentParam);
+    ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
+    tmp->setValue( commLink.requestParamValue(remoteDeviceId, currentIndex) );
+  }
 }
 
 void Menu::nextMenuItem() {
@@ -129,37 +145,13 @@ void Menu::decParam() {
   currentParam->dec();
 }
 
-void Menu::setCurrentParamValue(uint8_t value) {
+void Menu::saveParamValue(){
+  ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
 #ifdef DEBUG_MENUS
-  if (currentParam == NULL) {
-    Serial.println("Menu::setCurrentParamValue currentParam == NULL");
-    return;
-  }
+  Serial.print("Menu::saveParamValue sending param index:");
+  Serial.print(currentIndex);
+  Serial.print(" value:");
+  Serial.println(tmp->getValue());
 #endif
-  
-  if (currentParam->isRemotelyRefreshable()) {
-    ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
-    tmp->setValue(value);
-  }
+  commLink.sendParamChange(remoteDeviceId, currentIndex, tmp->getValue());
 }
-
-void Menu::getCurrentParamInfo(uint8_t* deviceId, uint8_t* paramIndex, uint8_t* paramValue) {
-#ifdef DEBUG_MENUS
-  if (currentParam == NULL) {
-    Serial.println("Menu::getCurrentParamInfo currentParam == NULL");
-    return;
-  }
-#endif
-  if (currentParam->isRemotelyRefreshable()) {
-    ValuedParam* tmp = static_cast<ValuedParam*>(currentParam);
-    *deviceId = remoteDeviceId;
-    *paramIndex = tmp->getRemoteIndex();
-    *paramValue = tmp->getValue();
-
-  } else {
-    *deviceId = 0;
-    *paramIndex = 0;
-    *paramValue = 0;
-  }
-}
-

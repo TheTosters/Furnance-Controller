@@ -57,12 +57,21 @@ Param::Param(char* n)
   
 }
 
+Param::~Param() {
+#ifdef DEBUG_PARAMS
+    Serial.print("Deleting Parameter:");
+    Serial.println(name);
+#endif
+  delete[] name;
+  name = NULL;
+}
+
 bool Param::isRemotelyRefreshable() {
   return false;
 }
 
-ValuedParam::ValuedParam(char* name, uint8_t _units, uint8_t index, uint8_t min, uint8_t max) 
-: Param(name), units(_units), remoteIndex(index), minValue(min), maxValue(max) {
+ValuedParam::ValuedParam(char* name, uint8_t _units, uint8_t min, uint8_t max) 
+: Param(name), units(_units), minValue(min), maxValue(max) {
   
 }
 
@@ -101,7 +110,9 @@ void ExecParam::inc() {
   if (actionCallback != NULL) {
     actionCallback();
   } else {
+#ifdef DEBUG_PARAMS
     Serial.println("No ENTER callback present");
+#endif
   }
 }
 
@@ -109,7 +120,9 @@ void ExecParam::dec() {
   if (exitCallback != NULL) {
     exitCallback();
   } else {
+#ifdef DEBUG_PARAMS
     Serial.println("No EXIT callback present");
+#endif
   }
 }
 
@@ -156,4 +169,3 @@ void SpecialParam::getLCDLines(char* line1, char* line2) {
       break;
   }
 }
-

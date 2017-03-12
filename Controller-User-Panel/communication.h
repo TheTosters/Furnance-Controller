@@ -26,6 +26,7 @@ class Communication {
     //used to fetch info from other MCU
     Menu* getFeederMenu(ExecMenuCallback onActivate);
     Menu* getPumpsMenu(ExecMenuCallback onActivate);
+    void fetchParamDescription(uint8_t deviceId, uint8_t index, Param** outParam);
   private:
     Menu* getMenu(int deviceId, ExecMenuCallback onActivate);
 };

@@ -48,36 +48,11 @@ static void clearButtonsCallbacks() {
   }
 }
 
-static void refreshCurrentParamValue() {
-#ifdef DEBUG_MENUS
-  Serial.println("Menu:refreshCurrentParamValue"); 
-#endif
-  uint8_t deviceId;
-  uint8_t paramIndex;
-  uint8_t paramValue;
-  currentMenu->getCurrentParamInfo(&deviceId, &paramIndex, &paramValue);
-#ifdef DEBUG_MENUS
-  Serial.print("  deviceId=");
-  Serial.print(deviceId); 
-  Serial.print(", paramIndex="); 
-  Serial.print(paramIndex); 
-  Serial.print(", paramValue="); 
-  Serial.println(paramValue); 
-#endif
-/* todo: debug test
-  if (deviceId != 0) {
-    paramValue = commLink.requestParamValue(deviceId, paramIndex);
-    currentMenu->setCurrentParamValue(paramValue);
-  }
-  */
-}
-
 static void prevMenuItem() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:prevMenuItem"); 
 #endif
   currentMenu->prevMenuItem();
-  refreshCurrentParamValue();
 }
 
 static void nextMenuItem() {
@@ -85,15 +60,13 @@ static void nextMenuItem() {
   Serial.println("Menu:nextMenuItem"); 
 #endif
   currentMenu->nextMenuItem();
-  refreshCurrentParamValue();
 }
 
 static void openMainMenu() {
 #ifdef DEBUG_MENUS
   Serial.println("Menu:openMainMenu"); 
 #endif
-  currentMenu = mainMenu;
-  currentMenu->activate();
+  mainMenu->activate();
 }
 
 static void openFeederMenu() {
@@ -113,11 +86,9 @@ static void openPumpsMenu() {
 
 static void onSendChangedParam() {
 #ifdef DEBUG_MENUS
-  Serial.println("Menu:onSendChangedParam"); 
+  Serial.println("Menu:onSendChangedParam");
 #endif
-  uint8_t devId, index, value;
-  currentMenu->getCurrentParamInfo(&devId, &index, &value);
-  commLink.sendParamChange(devId, index, value); 
+  currentMenu->saveParamValue();
 }
 
 static void editParamDec() {
