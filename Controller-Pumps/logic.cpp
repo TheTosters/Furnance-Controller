@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 #include "logic.h"
 #include "temperature.h"
 
@@ -24,12 +25,12 @@ void resetConfigToDefault() {
 
 void saveConfig() {
   int eeAddress = 0;
-  EEPROM.put(eeAddress, workConfig);  
+  EEPROM.put(eeAddress, logicConfig);  
 }
 
 void loadConfig() {
   int eeAddress = 0;
-  EEPROM.get(eeAddress, workConfig);  
+  EEPROM.get(eeAddress, logicConfig);  
 }
 
 void beginLogic() {

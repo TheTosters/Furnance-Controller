@@ -35,7 +35,7 @@ static void mainMenuWorkModeStartStop() {
   } else {
     workMode = WorkMode_STOP;
   }
-  commLink->sendWorkMode(workMode);
+  commLink.sendWorkMode(workMode);
 }
 
 static void clearButtonsCallbacks() {

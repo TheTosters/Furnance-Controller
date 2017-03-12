@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include <Arduino.h>
 #include "communication.h"
 #include "logic.h"
 #include "communication_consts.h"
